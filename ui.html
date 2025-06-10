@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Economy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <div id="login" class="bg-white p-6 rounded shadow-md w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4">Login</h1>
+    <input id="username" type="text" placeholder="Username (editor/viewer)" class="w-full p-2 mb-2 border rounded">
+    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-2 border rounded">
+    <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Login</button>
+  </div>
+  <div id="app" class="hidden bg-white p-6 rounded shadow-md w-full max-w-4xl">
+    <h1 class="text-2xl font-bold mb-4">Token Economy</h1>
+    <div id="grid" class="mb-4">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="border p-2">Day</th>
+            <th class="border p-2">Task 1</th>
+            <th class="border p-2">Task 2</th>
+            <th class="border p-2">Task 3</th>
+            <th class="border p-2">Task 4</th>
+            <th class="border p-2">Task 5</th>
+            <th class="border p-2">Task 6</th>
+            <th class="border p-2">Task 7</th>
+            <th class="border p-2">Task 8</th>
+          </tr>
+        </thead>
+        <tbody id="grid-body"></tbody>
+      </table>
+    </div>
+    <button onclick="viewHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">View History</button>
+    <div id="history" class="mt-4 hidden">
+      <h2 class="text-xl font-bold mb-2">History</h2>
+      <select id="history-select" onchange="loadHistory()" class="w-full p-2 mb-2 border rounded"></select>
+      <table class="w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="border p-2">Day</th>
+            <th class="border p-2">Task 1</th>
+            <th class="border p-2">Task 2</th>
+            <th class="border p-2">Task 3</th>
+            <th class="border p-2">Task 4</th>
+            <th class="border p-2">Task 5</th>
+            <th class="border p-2">Task 6</th>
+            <th class="border p-2">Task 7</th>
+            <th class="border p-2">Task 8</th>
+          </tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    let token = null;
+    let role = null;
+
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (data.token) {
+        token = data.token;
+        role = data.role;
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        loadGrid();
+      } else {
+        alert('Login failed');
+      }
+    }
+
+    async function loadGrid() {
+      const response = await fetch('/grid', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const grid = await response.json();
+      const tbody = document.getElementById('grid-body');
+      tbody.innerHTML = '';
+      for (const [day, tasks] of Object.entries(grid)) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="border p-2">${day}</td>`;
+        for (let i = 1; i <= 8; i++) {
+          const checked = tasks[`task${i}`] ? 'checked' : '';
+          const disabled = role === 'viewer' ? 'disabled' : '';
+          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('grid', '${day}', 'task${i}', this.checked)"></td>`;
+        }
+        tbody.appendChild(row);
+      }
+    }
+
+    async function updateTask(endpoint, day, task, value) {
+      await fetch(`/${endpoint}${endpoint === 'history' ? '/' + document.getElementById('history-select').value : ''}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day, task, value }),
+      });
+      if (endpoint === 'grid') loadGrid();
+      else loadHistory();
+    }
+
+    async function viewHistory() {
+      const historyDiv = document.getElementById('history');
+      historyDiv.classList.toggle('hidden');
+      if (!historyDiv.classList.contains('hidden')) {
+        const response = await fetch('/history', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const history = await response.json();
+        const select = document.getElementById('history-select');
+        select.innerHTML = '<option value="">Select a week</option>';
+        history.forEach(({ week }) => {
+          const option = document.createElement('option');
+          option.value = week;
+          option.textContent = week;
+          select.appendChild(option);
+        });
+      }
+    }
+
+    async function loadHistory() {
+      const week = document.getElementById('history-select').value;
+      if (!week) return;
+      const response = await fetch(`/history/${week}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const grid = await response.json();
+      const tbody = document.getElementById('history-body');
+      tbody.innerHTML = '';
+      for (const [day, tasks] of Object.entries(grid)) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="border p-2">${day}</td>`;
+        for (let i = 1; i <= 8; i++) {
+          const checked = tasks[`task${i}`] ? 'checked' : '';
+          const disabled = role === 'viewer' ? 'disabled' : '';
+          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('history', '${day}', 'task${i}', this.checked)"></td>`;
+        }
+        tbody.appendChild(row);
+      }
+    }
+  </script>
+</body>
+</html>

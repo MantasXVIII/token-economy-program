@@ -1,0 +1,13 @@
+name = "token-economy"
+main = "index.js"
+compatibility_date = "2025-06-10"
+
+[[kv_namespaces]]
+binding = "GRID_KV"
+id = "your-kv-namespace-id"
+
+[[triggers]]
+schedule = "0 0 * * 0"
+
+[vars]
+UI_HTML = ""
