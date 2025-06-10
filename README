@@ -1,0 +1,3 @@
+# Token economy program
+
+Supports two users, an admin and an end user. Admin can give tokens, user can view the current week and past weeks
