@@ -1,4 +1,4 @@
-name = "token-economy"
+name = "tokens"
 main = "index.js"
 compatibility_date = "2025-06-10"
 compatibility_flags = ["nodejs_compat"]
