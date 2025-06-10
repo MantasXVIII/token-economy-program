@@ -1,8 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { UI_HTML } from './.wrangler/tmp/ui_html.js';
 
-const GRID_KV = 'GRID_KV';
-
 const DEFAULT_GRID = {
   Monday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
   Tuesday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
@@ -61,7 +59,7 @@ export default {
       if (user instanceof Response) return user;
 
       if (request.method === 'GET') {
-        let grid = await env.GRID_KV.get('grid/current', 'json');
+        let grid = await env.GRID_KV.get('grid/current', { type: 'json' });
         if (!grid) {
           grid = DEFAULT_GRID;
           await env.GRID_KV.put('grid/current', JSON.stringify(grid));
@@ -73,7 +71,7 @@ export default {
 
       if (request.method === 'PUT' && user.role === 'editor') {
         const { day, task, value } = await request.json();
-        let grid = await env.GRID_KV.get('grid/current', 'json') || DEFAULT_GRID;
+        let grid = await env.GRID_KV.get('grid/current', { type: 'json' }) || DEFAULT_GRID;
         if (grid[day] && grid[day][task] !== undefined) {
           grid[day][task] = value;
           await env.GRID_KV.put('grid/current', JSON.stringify(grid));
@@ -101,7 +99,7 @@ export default {
       if (url.pathname.match(/^\/history\/\d{4}-\d{2}-\d{2}$/)) {
         const week = url.pathname.split('/').pop();
         if (request.method === 'GET') {
-          const grid = await env.GRID_KV.get(`history/${week}`, 'json');
+          const grid = await env.GRID_KV.get(`history/${week}`, { type: 'json' });
           if (!grid) {
             return new Response('History not found', { status: 404 });
           }
@@ -112,7 +110,7 @@ export default {
 
         if (request.method === 'PUT' && user.role === 'editor') {
           const { day, task, value } = await request.json();
-          let grid = await env.GRID_KV.get(`history/${week}`, 'json');
+          let grid = await env.GRID_KV.get(`history/${week}`, { type: 'json' });
           if (!grid) {
             return new Response('History not found', { status: 404 });
           }
@@ -134,7 +132,7 @@ export default {
 
   async scheduled(event, env, ctx) {
     if (event.cron === '0 0 * * 0') {
-      const currentGrid = await env.GRID_KV.get('grid/current', 'json') || DEFAULT_GRID;
+      const currentGrid = await env.GRID_KV.get('grid/current', { type: 'json' }) || DEFAULT_GRID;
       const date = new Date();
       date.setDate(date.getDate() - date.getDay());
       const weekKey = `history/${date.toISOString().split('T')[0]}`;

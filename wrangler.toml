@@ -1,13 +1,11 @@
 name = "token-economy"
 main = "index.js"
 compatibility_date = "2025-06-10"
+compatibility_flags = ["nodejs_compat"]
 
 [[kv_namespaces]]
 binding = "GRID_KV"
-id = "your-kv-namespace-id"
+id = "81af810e9ebe44828bf2849609f0551a"
 
 [[triggers]]
-schedule = "0 0 * * 0"
-
-[vars]
-UI_HTML = ""
+schedules = ["0 0 * * 0"]
