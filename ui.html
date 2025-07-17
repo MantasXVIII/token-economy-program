@@ -2,151 +2,246 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Token Economy</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .grid-container, .history-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+    th, td {
+      padding: 6px;
+      text-align: center;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    td input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+    #login-form {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 10px;
+    }
+    input[type="text"], input[type="password"], button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button {
+      height: 44px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #history-section {
+      margin: 20px;
+    }
+    #history-select {
+      width: 100%;
+      max-width: 300px;
+      padding: 8px;
+      font-size: 16px;
+    }
+    @media screen and (max-width: 800px) {
+      th, td {
+        font-size: 12px;
+        padding: 4px;
+      }
+      table {
+        min-width: 0;
+      }
+      th:nth-child(n+6), td:nth-child(n+6) {
+        display: none;
+      }
+    }
+    @media screen and (min-width: 801px) and (max-width: 1200px) {
+      th, td {
+        font-size: 13px;
+        padding: 5px;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-  <div id="login" class="bg-white p-6 rounded shadow-md w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-4">Login</h1>
-    <input id="username" type="text" placeholder="Username (editor/viewer)" class="w-full p-2 mb-2 border rounded">
-    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-2 border rounded">
-    <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Login</button>
+<body>
+  <div id="login-section">
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
   </div>
-  <div id="app" class="hidden bg-white p-6 rounded shadow-md w-full max-w-4xl">
-    <h1 class="text-2xl font-bold mb-4">Token Economy</h1>
-    <div id="grid" class="mb-4">
-      <table class="w-full border-collapse">
-        <thead>
-          <tr>
-            <th class="border p-2">Day</th>
-            <th class="border p-2">Task 1</th>
-            <th class="border p-2">Task 2</th>
-            <th class="border p-2">Task 3</th>
-            <th class="border p-2">Task 4</th>
-            <th class="border p-2">Task 5</th>
-            <th class="border p-2">Task 6</th>
-            <th class="border p-2">Task 7</th>
-            <th class="border p-2">Task 8</th>
-          </tr>
-        </thead>
-        <tbody id="grid-body"></tbody>
-      </table>
-    </div>
-    <button onclick="viewHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">View History</button>
-    <div id="history" class="mt-4 hidden">
-      <h2 class="text-xl font-bold mb-2">History</h2>
-      <select id="history-select" onchange="loadHistory()" class="w-full p-2 mb-2 border rounded"></select>
-      <table class="w-full border-collapse">
-        <thead>
-          <tr>
-            <th class="border p-2">Day</th>
-            <th class="border p-2">Task 1</th>
-            <th class="border p-2">Task 2</th>
-            <th class="border p-2">Task 3</th>
-            <th class="border p-2">Task 4</th>
-            <th class="border p-2">Task 5</th>
-            <th class="border p-2">Task 6</th>
-            <th class="border p-2">Task 7</th>
-            <th class="border p-2">Task 8</th>
-          </tr>
-        </thead>
-        <tbody id="history-body"></tbody>
-      </table>
-    </div>
-  </div>
-  <script>
-    let token = null;
-    let role = null;
 
-    async function login() {
+  <div id="grid-section" style="display: none;">
+    <h2>Token Economy</h2>
+    <div class="grid-container">
+      <table id="grid">
+        <tr>
+          <th>Day</th>
+          <th>Task 1</th>
+          <th>Task 2</th>
+          <th>Task 3</th>
+          <th>Task 4</th>
+          <th>Task 5</th>
+          <th>Task 6</th>
+          <th>Task 7</th>
+          <th>Task 8</th>
+        </tr>
+      </table>
+    </div>
+    <div id="history-section">
+      <h3>View History</h3>
+      <select id="history-select">
+        <option value="">Select a week</option>
+      </select>
+      <div class="history-container">
+        <table id="history-table">
+          <tr>
+            <th>Day</th>
+            <th>Task 1</th>
+            <th>Task 2</th>
+            <th>Task 3</th>
+            <th>Task 4</th>
+            <th>Task 5</th>
+            <th>Task 6</th>
+            <th>Task 7</th>
+            <th>Task 8</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function login(event) {
+      event.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       const response = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
       const data = await response.json();
       if (data.token) {
-        token = data.token;
-        role = data.role;
-        document.getElementById('login').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('grid-section').style.display = 'block';
         loadGrid();
+        loadHistory();
       } else {
-        alert('Login failed');
+        alert(data.error || 'Login failed');
       }
     }
 
     async function loadGrid() {
       const response = await fetch('/grid', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const grid = await response.json();
-      const tbody = document.getElementById('grid-body');
-      tbody.innerHTML = '';
+      const table = document.getElementById('grid');
+      table.innerHTML = '<tr><th>Day</th><th>Task 1</th><th>Task 2</th><th>Task 3</th><th>Task 4</th><th>Task 5</th><th>Task 6</th><th>Task 7</th><th>Task 8</th></tr>';
+      const isPhone = window.innerWidth <= 800;
       for (const [day, tasks] of Object.entries(grid)) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td class="border p-2">${day}</td>`;
-        for (let i = 1; i <= 8; i++) {
-          const checked = tasks[`task${i}`] ? 'checked' : '';
-          const disabled = role === 'viewer' ? 'disabled' : '';
-          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('grid', '${day}', 'task${i}', this.checked)"></td>`;
-        }
-        tbody.appendChild(row);
+        const row = `<tr>
+          <td>${day}</td>
+          <td><input type="checkbox" ${tasks.task1 ? 'checked' : ''} data-day="${day}" data-task="task1" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+          <td><input type="checkbox" ${tasks.task2 ? 'checked' : ''} data-day="${day}" data-task="task2" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+          <td><input type="checkbox" ${tasks.task3 ? 'checked' : ''} data-day="${day}" data-task="task3" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+          <td><input type="checkbox" ${tasks.task4 ? 'checked' : ''} data-day="${day}" data-task="task4" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+          ${isPhone ? '' : `
+            <td><input type="checkbox" ${tasks.task5 ? 'checked' : ''} data-day="${day}" data-task="task5" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+            <td><input type="checkbox" ${tasks.task6 ? 'checked' : ''} data-day="${day}" data-task="task6" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+            <td><input type="checkbox" ${tasks.task7 ? 'checked' : ''} data-day="${day}" data-task="task7" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+            <td><input type="checkbox" ${tasks.task8 ? 'checked' : ''} data-day="${day}" data-task="task8" ${localStorage.getItem('role') === 'viewer' ? 'disabled' : ''}></td>
+          `}
+        </tr>`;
+        table.innerHTML += row;
       }
-    }
-
-    async function updateTask(endpoint, day, task, value) {
-      await fetch(`/${endpoint}${endpoint === 'history' ? '/' + document.getElementById('history-select').value : ''}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day, task, value }),
-      });
-      if (endpoint === 'grid') loadGrid();
-      else loadHistory();
-    }
-
-    async function viewHistory() {
-      const historyDiv = document.getElementById('history');
-      historyDiv.classList.toggle('hidden');
-      if (!historyDiv.classList.contains('hidden')) {
-        const response = await fetch('/history', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const history = await response.json();
-        const select = document.getElementById('history-select');
-        select.innerHTML = '<option value="">Select a week</option>';
-        history.forEach(({ week }) => {
-          const option = document.createElement('option');
-          option.value = week;
-          option.textContent = week;
-          select.appendChild(option);
+      if (localStorage.getItem('role') === 'editor') {
+        table.addEventListener('change', async (event) => {
+          if (event.target.type === 'checkbox') {
+            const { day, task } = event.target.dataset;
+            const value = event.target.checked;
+            await fetch('/grid', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ day, task, value })
+            });
+          }
         });
       }
     }
 
     async function loadHistory() {
-      const week = document.getElementById('history-select').value;
-      if (!week) return;
-      const response = await fetch(`/history/${week}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch('/history', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      const grid = await response.json();
-      const tbody = document.getElementById('history-body');
-      tbody.innerHTML = '';
-      for (const [day, tasks] of Object.entries(grid)) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td class="border p-2">${day}</td>`;
-        for (let i = 1; i <= 8; i++) {
-          const checked = tasks[`task${i}`] ? 'checked' : '';
-          const disabled = role === 'viewer' ? 'disabled' : '';
-          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('history', '${day}', 'task${i}', this.checked)"></td>`;
+      const history = await response.json();
+      const select = document.getElementById('history-select');
+      select.innerHTML = '<option value="">Select a week</option>';
+      history.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.week;
+        option.textContent = item.week;
+        select.appendChild(option);
+      });
+      select.addEventListener('change', async (event) => {
+        const week = event.target.value;
+        if (week) {
+          const response = await fetch(`/history/${week}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          });
+          const grid = await response.json();
+          const table = document.getElementById('history-table');
+          table.innerHTML = '<tr><th>Day</th><th>Task 1</th><th>Task 2</th><th>Task 3</th><th>Task 4</th><th>Task 5</th><th>Task 6</th><th>Task 7</th><th>Task 8</th></tr>';
+          const isPhone = window.innerWidth <= 800;
+          for (const [day, tasks] of Object.entries(grid)) {
+            const row = `<tr>
+              <td>${day}</td>
+              <td><input type="checkbox" ${tasks.task1 ? 'checked' : ''} data-day="${day}" data-task="task1" disabled></td>
+              <td><input type="checkbox" ${tasks.task2 ? 'checked' : ''} data-day="${day}" data-task="task2" disabled></td>
+              <td><input type="checkbox" ${tasks.task3 ? 'checked' : ''} data-day="${day}" data-task="task3" disabled></td>
+              <td><input type="checkbox" ${tasks.task4 ? 'checked' : ''} data-day="${day}" data-task="task4" disabled></td>
+              ${isPhone ? '' : `
+                <td><input type="checkbox" ${tasks.task5 ? 'checked' : ''} data-day="${day}" data-task="task5" disabled></td>
+                <td><input type="checkbox" ${tasks.task6 ? 'checked' : ''} data-day="${day}" data-task="task6" disabled></td>
+                <td><input type="checkbox" ${tasks.task7 ? 'checked' : ''} data-day="${day}" data-task="task7" disabled></td>
+                <td><input type="checkbox" ${tasks.task8 ? 'checked' : ''} data-day="${day}" data-task="task8" disabled></td>
+              `}
+            </tr>`;
+            table.innerHTML += row;
+          }
         }
-        tbody.appendChild(row);
-      }
+      });
     }
+
+    document.getElementById('login-form').addEventListener('submit', login);
   </script>
 </body>
 </html>
