@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Economy</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <div id="login" class="bg-white p-6 rounded shadow-md w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4">Login</h1>
+    <input id="username" type="text" placeholder="Username (editor/viewer)" class="w-full p-2 mb-2 border rounded">
+    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-2 border rounded">
+    <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Login</button>
+  </div>
+  <div id="app" class="hidden bg-white p-6 rounded shadow-md w-full max-w-4xl">
+    <h1 class="text-2xl font-bold mb-4">Token Economy</h1>
+    <div id="grid" class="mb-4">
+      <table class="w-full border-collapse">
+        <thead id="grid-header"></thead>
+        <tbody id="grid-body"></tbody>
+      </table>
+    </div>
+    <button onclick="viewHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">View History</button>
+    <div id="history" class="mt-4 hidden">
+      <h2 class="text-xl font-bold mb-2">History</h2>
+      <select id="history-select" onchange="loadHistory()" class="w-full p-2 mb-2 border rounded"></select>
+      <table class="w-full border-collapse">
+        <thead id="history-header"></thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <script src="/js/app.js"></script>
+</body>
+</html>

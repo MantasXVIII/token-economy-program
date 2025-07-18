@@ -1,0 +1,33 @@
+@import 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css';
+
+body {
+  @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
+}
+
+table {
+  @apply w-full border-collapse;
+}
+
+th, td {
+  @apply border p-2;
+}
+
+th {
+  @apply bg-gray-200 font-semibold;
+}
+
+td {
+  @apply text-center;
+}
+
+input[type="checkbox"] {
+  @apply h-5 w-5;
+}
+
+input[type="text"], input[type="password"], select {
+  @apply w-full p-2 mb-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+button {
+  @apply transition duration-200;
+}

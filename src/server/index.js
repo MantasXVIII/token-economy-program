@@ -1,14 +1,14 @@
 import jwt from 'jsonwebtoken';
-import { UI_HTML } from './.wrangler/tmp/ui_html.js';
+import { UI_HTML } from '../utils/ui_html.js';
 
 const DEFAULT_GRID = {
-  Monday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
-  Tuesday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
-  Wednesday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
-  Thursday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
-  Friday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
-  Saturday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
-  Sunday: { task1: false, task2: false, task3: false, task4: false, task5: false, task6: false, task7: false, task8: false },
+  Monday: {},
+  Tuesday: {},
+  Wednesday: {},
+  Thursday: {},
+  Friday: {},
+  Saturday: {},
+  Sunday: {}
 };
 
 export default {
@@ -32,6 +32,27 @@ export default {
     if (url.pathname === '/' && request.method === 'GET') {
       return new Response(UI_HTML, {
         headers: { 'Content-Type': 'text/html' },
+      });
+    }
+
+    if (url.pathname === '/css/styles.css' && request.method === 'GET') {
+      const css = await env.GRID_KV.get('styles.css', { type: 'text' });
+      return new Response(css, {
+        headers: { 'Content-Type': 'text/css' },
+      });
+    }
+
+    if (url.pathname === '/js/app.js' && request.method === 'GET') {
+      const js = await env.GRID_KV.get('app.js', { type: 'text' });
+      return new Response(js, {
+        headers: { 'Content-Type': 'application/javascript' },
+      });
+    }
+
+    if (url.pathname === '/tasks' && request.method === 'GET') {
+      const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
+      return new Response(JSON.stringify(tasks), {
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -61,7 +82,13 @@ export default {
       if (request.method === 'GET') {
         let grid = await env.GRID_KV.get('grid/current', { type: 'json' });
         if (!grid) {
-          grid = DEFAULT_GRID;
+          const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
+          grid = JSON.parse(JSON.stringify(DEFAULT_GRID));
+          Object.keys(grid).forEach(day => {
+            tasks.forEach((_, index) => {
+              grid[day][`task${index + 1}`] = false;
+            });
+          });
           await env.GRID_KV.put('grid/current', JSON.stringify(grid));
         }
         return new Response(JSON.stringify(grid), {
@@ -71,12 +98,11 @@ export default {
 
       if (request.method === 'PUT' && user.role === 'editor') {
         const { day, task, value } = await request.json();
-        if (!day || !task || typeof value !== 'boolean' || !DEFAULT_GRID[day] || DEFAULT_GRID[day][task] === undefined) {
-          return new Response('Invalid day or task', { status: 400 });
+        let grid = await env.GRID_KV.get('grid/current', { type: 'json' }) || JSON.parse(JSON.stringify(DEFAULT_GRID));
+        if (grid[day] && grid[day][task] !== undefined) {
+          grid[day][task] = value;
+          await env.GRID_KV.put('grid/current', JSON.stringify(grid));
         }
-        let grid = await env.GRID_KV.get('grid/current', { type: 'json' }) || DEFAULT_GRID;
-        grid[day][task] = value;
-        await env.GRID_KV.put('grid/current', JSON.stringify(grid));
         return new Response(JSON.stringify(grid), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -111,15 +137,14 @@ export default {
 
         if (request.method === 'PUT' && user.role === 'editor') {
           const { day, task, value } = await request.json();
-          if (!day || !task || typeof value !== 'boolean' || !DEFAULT_GRID[day] || DEFAULT_GRID[day][task] === undefined) {
-            return new Response('Invalid day or task', { status: 400 });
-          }
           let grid = await env.GRID_KV.get(`history/${week}`, { type: 'json' });
           if (!grid) {
             return new Response('History not found', { status: 404 });
           }
-          grid[day][task] = value;
-          await env.GRID_KV.put(`history/${week}`, JSON.stringify(grid));
+          if (grid[day] && grid[day][task] !== undefined) {
+            grid[day][task] = value;
+            await env.GRID_KV.put(`history/${week}`, JSON.stringify(grid));
+          }
           return new Response(JSON.stringify(grid), {
             headers: { 'Content-Type': 'application/json' },
           });
@@ -134,12 +159,19 @@ export default {
 
   async scheduled(event, env, ctx) {
     if (event.cron === '0 0 * * 0') {
-      const currentGrid = await env.GRID_KV.get('grid/current', { type: 'json' }) || DEFAULT_GRID;
+      const currentGrid = await env.GRID_KV.get('grid/current', { type: 'json' }) || JSON.parse(JSON.stringify(DEFAULT_GRID));
       const date = new Date();
-      date.setDate(date.getDate() - date.getDay()); // Set to Sunday of the current week
+      date.setDate(date.getDate() - date.getDay());
       const weekKey = `history/${date.toISOString().split('T')[0]}`;
       await env.GRID_KV.put(weekKey, JSON.stringify(currentGrid));
-      await env.GRID_KV.put('grid/current', JSON.stringify(DEFAULT_GRID));
+      const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
+      const newGrid = JSON.parse(JSON.stringify(DEFAULT_GRID));
+      Object.keys(newGrid).forEach(day => {
+        tasks.forEach((_, index) => {
+          newGrid[day][`task${index + 1}`] = false;
+        });
+      });
+      await env.GRID_KV.put('grid/current', JSON.stringify(newGrid));
     }
   },
 };
