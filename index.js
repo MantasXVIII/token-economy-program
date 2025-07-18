@@ -71,11 +71,12 @@ export default {
 
       if (request.method === 'PUT' && user.role === 'editor') {
         const { day, task, value } = await request.json();
-        let grid = await env.GRID_KV.get('grid/current', { type: 'json' }) || DEFAULT_GRID;
-        if (grid[day] && grid[day][task] !== undefined) {
-          grid[day][task] = value;
-          await env.GRID_KV.put('grid/current', JSON.stringify(grid));
+        if (!day || !task || typeof value !== 'boolean' || !DEFAULT_GRID[day] || DEFAULT_GRID[day][task] === undefined) {
+          return new Response('Invalid day or task', { status: 400 });
         }
+        let grid = await env.GRID_KV.get('grid/current', { type: 'json' }) || DEFAULT_GRID;
+        grid[day][task] = value;
+        await env.GRID_KV.put('grid/current', JSON.stringify(grid));
         return new Response(JSON.stringify(grid), {
           headers: { 'Content-Type': 'application/json' },
         });
@@ -110,14 +111,15 @@ export default {
 
         if (request.method === 'PUT' && user.role === 'editor') {
           const { day, task, value } = await request.json();
+          if (!day || !task || typeof value !== 'boolean' || !DEFAULT_GRID[day] || DEFAULT_GRID[day][task] === undefined) {
+            return new Response('Invalid day or task', { status: 400 });
+          }
           let grid = await env.GRID_KV.get(`history/${week}`, { type: 'json' });
           if (!grid) {
             return new Response('History not found', { status: 404 });
           }
-          if (grid[day] && grid[day][task] !== undefined) {
-            grid[day][task] = value;
-            await env.GRID_KV.put(`history/${week}`, JSON.stringify(grid));
-          }
+          grid[day][task] = value;
+          await env.GRID_KV.put(`history/${week}`, JSON.stringify(grid));
           return new Response(JSON.stringify(grid), {
             headers: { 'Content-Type': 'application/json' },
           });
@@ -134,7 +136,7 @@ export default {
     if (event.cron === '0 0 * * 0') {
       const currentGrid = await env.GRID_KV.get('grid/current', { type: 'json' }) || DEFAULT_GRID;
       const date = new Date();
-      date.setDate(date.getDate() - date.getDay());
+      date.setDate(date.getDate() - date.getDay()); // Set to Sunday of the current week
       const weekKey = `history/${date.toISOString().split('T')[0]}`;
       await env.GRID_KV.put(weekKey, JSON.stringify(currentGrid));
       await env.GRID_KV.put('grid/current', JSON.stringify(DEFAULT_GRID));

@@ -8,24 +8,29 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+      background-color: #f8f8f8; /* Light background for body */
     }
     .grid-container, .history-container {
       width: 100%;
       overflow-x: auto;
+      background-color: #f2f2f2; /* Apply background to container */
+      padding: 10px; /* Add padding for better spacing */
+      box-sizing: border-box;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       table-layout: auto;
+      background-color: #f2f2f2; /* Ensure table itself has background */
     }
     th, td {
       padding: 6px;
       text-align: center;
       border: 1px solid #ddd;
       font-size: 14px;
+      background-color: #f2f2f2; /* Consistent background for cells */
     }
     th {
-      background-color: #f2f2f2;
       font-weight: bold;
     }
     td input[type="checkbox"] {
@@ -58,11 +63,12 @@
     #history-section {
       margin: 20px;
     }
-    #history-select {
+    #history-select, #edit-history-button {
       width: 100%;
       max-width: 300px;
       padding: 8px;
       font-size: 16px;
+      margin: 5px 0;
     }
     @media screen and (max-width: 800px) {
       th, td {
@@ -73,13 +79,19 @@
         min-width: 0;
       }
       th:nth-child(n+6), td:nth-child(n+6) {
-        display: none;
+        display: none; /* Hide tasks 5–8 on phones */
+      }
+      .grid-container, .history-container {
+        background-color: #f2f2f2; /* Reinforce background */
       }
     }
     @media screen and (min-width: 801px) and (max-width: 1200px) {
       th, td {
         font-size: 13px;
         padding: 5px;
+      }
+      .grid-container, .history-container {
+        background-color: #f2f2f2; /* Consistent background for tablets */
       }
     }
   </style>
@@ -115,6 +127,7 @@
       <select id="history-select">
         <option value="">Select a week</option>
       </select>
+      <button id="edit-history-button" style="display: none;">Edit This Week</button>
       <div class="history-container">
         <table id="history-table">
           <tr>
@@ -149,6 +162,7 @@
         localStorage.setItem('role', data.role);
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('grid-section').style.display = 'block';
+        document.getElementById('edit-history-button').style.display = data.role === 'editor' ? 'block' : 'none';
         loadGrid();
         loadHistory();
       } else {
@@ -185,7 +199,7 @@
           if (event.target.type === 'checkbox') {
             const { day, task } = event.target.dataset;
             const value = event.target.checked;
-            await fetch('/grid', {
+            const response = await fetch('/grid', {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -193,6 +207,10 @@
               },
               body: JSON.stringify({ day, task, value })
             });
+            if (!response.ok) {
+              alert('Failed to update grid');
+              event.target.checked = !value; // Revert checkbox
+            }
           }
         });
       }
@@ -214,34 +232,66 @@
       select.addEventListener('change', async (event) => {
         const week = event.target.value;
         if (week) {
-          const response = await fetch(`/history/${week}`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-          });
-          const grid = await response.json();
-          const table = document.getElementById('history-table');
-          table.innerHTML = '<tr><th>Day</th><th>Task 1</th><th>Task 2</th><th>Task 3</th><th>Task 4</th><th>Task 5</th><th>Task 6</th><th>Task 7</th><th>Task 8</th></tr>';
-          const isPhone = window.innerWidth <= 800;
-          for (const [day, tasks] of Object.entries(grid)) {
-            const row = `<tr>
-              <td>${day}</td>
-              <td><input type="checkbox" ${tasks.task1 ? 'checked' : ''} data-day="${day}" data-task="task1" disabled></td>
-              <td><input type="checkbox" ${tasks.task2 ? 'checked' : ''} data-day="${day}" data-task="task2" disabled></td>
-              <td><input type="checkbox" ${tasks.task3 ? 'checked' : ''} data-day="${day}" data-task="task3" disabled></td>
-              <td><input type="checkbox" ${tasks.task4 ? 'checked' : ''} data-day="${day}" data-task="task4" disabled></td>
-              ${isPhone ? '' : `
-                <td><input type="checkbox" ${tasks.task5 ? 'checked' : ''} data-day="${day}" data-task="task5" disabled></td>
-                <td><input type="checkbox" ${tasks.task6 ? 'checked' : ''} data-day="${day}" data-task="task6" disabled></td>
-                <td><input type="checkbox" ${tasks.task7 ? 'checked' : ''} data-day="${day}" data-task="task7" disabled></td>
-                <td><input type="checkbox" ${tasks.task8 ? 'checked' : ''} data-day="${day}" data-task="task8" disabled></td>
-              `}
-            </tr>`;
-            table.innerHTML += row;
-          }
+          await loadHistoryGrid(week, false);
+        } else {
+          document.getElementById('history-table').innerHTML = '<tr><th>Day</th><th>Task 1</th><th>Task 2</th><th>Task 3</th><th>Task 4</th><th>Task 5</th><th>Task 6</th><th>Task 7</th><th>Task 8</th></tr>';
         }
       });
     }
 
+    async function loadHistoryGrid(week, isEditMode) {
+      const response = await fetch(`/history/${week}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const grid = await response.json();
+      const table = document.getElementById('history-table');
+      table.innerHTML = '<tr><th>Day</th><th>Task 1</th><th>Task 2</th><th>Task 3</th><th>Task 4</th><th>Task 5</th><th>Task 6</th><th>Task 7</th><th>Task 8</th></tr>';
+      const isPhone = window.innerWidth <= 800;
+      for (const [day, tasks] of Object.entries(grid)) {
+        const row = `<tr>
+          <td>${day}</td>
+          <td><input type="checkbox" ${tasks.task1 ? 'checked' : ''} data-day="${day}" data-task="task1" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+          <td><input type="checkbox" ${tasks.task2 ? 'checked' : ''} data-day="${day}" data-task="task2" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+          <td><input type="checkbox" ${tasks.task3 ? 'checked' : ''} data-day="${day}" data-task="task3" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+          <td><input type="checkbox" ${tasks.task4 ? 'checked' : ''} data-day="${day}" data-task="task4" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+          ${isPhone ? '' : `
+            <td><input type="checkbox" ${tasks.task5 ? 'checked' : ''} data-day="${day}" data-task="task5" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+            <td><input type="checkbox" ${tasks.task6 ? 'checked' : ''} data-day="${day}" data-task="task6" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+            <td><input type="checkbox" ${tasks.task7 ? 'checked' : ''} data-day="${day}" data-task="task7" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+            <td><input type="checkbox" ${tasks.task8 ? 'checked' : ''} data-day="${day}" data-task="task8" ${isEditMode && localStorage.getItem('role') === 'editor' ? '' : 'disabled'}></td>
+          `}
+        </tr>`;
+        table.innerHTML += row;
+      }
+      if (isEditMode && localStorage.getItem('role') === 'editor') {
+        table.addEventListener('change', async (event) => {
+          if (event.target.type === 'checkbox') {
+            const { day, task } = event.target.dataset;
+            const value = event.target.checked;
+            const response = await fetch(`/history/${week}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ day, task, value })
+            });
+            if (!response.ok) {
+              alert('Failed to update history');
+              event.target.checked = !value; // Revert checkbox
+            }
+          }
+        });
+      }
+    }
+
     document.getElementById('login-form').addEventListener('submit', login);
+    document.getElementById('edit-history-button').addEventListener('click', async () => {
+      const week = document.getElementById('history-select').value;
+      if (week) {
+        await loadHistoryGrid(week, true);
+      }
+    });
   </script>
 </body>
 </html>
