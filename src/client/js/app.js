@@ -1,4 +1,4 @@
-// src/client/js/app.js
+// src/client/js/app.js (unchanged)
 document.addEventListener('DOMContentLoaded', async () => {
   let token = null;
   let role = null;

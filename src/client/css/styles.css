@@ -13,8 +13,9 @@ body {
 }
 
 #grid-container {
-  @apply overflow-x-hidden bg-white shadow-inner;
+  @apply overflow-x-auto bg-white shadow-inner;
   width: 100%;
+  max-width: 100%; /* Constrain to app width */
   position: relative;
   padding-bottom: 1px; /* Prevent collapse */
 }
@@ -24,16 +25,17 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%; /* Initial width */
+  width: 100%;
   height: 100%;
   background: white;
   z-index: -1;
-  min-width: 0; /* Default to dynamic width */
+  min-width: 0; /* Dynamic width */
 }
 
 #history-table-container {
-  @apply overflow-x-hidden bg-white shadow-inner;
+  @apply overflow-x-auto bg-white shadow-inner;
   width: 100%;
+  max-width: 100%; /* Constrain to app width */
   position: relative;
   padding-bottom: 1px; /* Prevent collapse */
 }
@@ -43,11 +45,11 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%; /* Initial width */
+  width: 100%;
   height: 100%;
   background: white;
   z-index: -1;
-  min-width: 0; /* Default to dynamic width */
+  min-width: 0; /* Dynamic width */
 }
 
 table {
@@ -89,10 +91,7 @@ button {
     @apply max-w-full p-4;
   }
 
-  #grid-container {
-    @apply overflow-x-auto; /* Enable scrolling in portrait */
-  }
-
+  #grid-container,
   #history-table-container {
     @apply overflow-x-auto; /* Enable scrolling in portrait */
   }
