@@ -3,22 +3,40 @@
 
 body {
   @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
-  overflow-x: auto; /* Enable horizontal scrolling for the body */
+  overflow-x: auto; /* Enable horizontal scrolling */
 }
 
 #app {
   @apply bg-white p-6 rounded shadow-md w-full max-w-4xl;
+  position: relative; /* For background overlay */
   min-width: 0; /* Prevent overflow issues */
-  overflow-x: auto; /* Ensure table can scroll within app */
+}
+
+#grid-container {
+  @apply overflow-x-auto;
+  width: 100%; /* Ensure container takes full width */
+  position: relative; /* For background positioning */
+}
+
+#grid-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; /* Match container width initially */
+  height: 100%; /* Full height of container */
+  background: white; /* Match app background */
+  z-index: -1; /* Behind content */
+  /* Extend background for scrolling */
+  min-width: 100vw; /* Minimum viewport width */
+  transform: translateX(0); /* Reset any offset */
 }
 
 table {
-  @apply w-full border-collapse;
-  margin-left: auto; /* Center the table */
-  margin-right: auto; /* Center the table */
-  min-width: 100%; /* Ensure table takes full width of scrollable area */ 
-  @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
-  overflow-x: auto; /* Enable horizontal scrolling for the body */
+  @apply border-collapse;
+  width: 100%; /* Ensure table fills container */
+  min-width: 1000px; /* Minimum width to force scrolling, adjust as needed */
+  margin: 0 auto; /* Center the table */
 }
 
 th, td {
@@ -48,25 +66,15 @@ button {
 /* Responsive adjustments for portrait/narrow screens */
 @media (max-width: 768px) {
   #app {
-    @apply max-w-full; /* Remove max-width constraint on narrow screens */
-    padding: 1rem; /* Reduce padding for better fit */
+    @apply max-w-full p-4; /* Full width, reduced padding */
+  }
+
+  #grid-container::before {
+    width: 100vw; /* Full viewport width for scrolling */
+    transform: translateX(-50%) translateX(-1rem); /* Center and adjust for padding */
   }
 
   table {
-    width: auto; /* Allow table to size based on content in narrow view */
-    min-width: 100vw; /* Ensure table spans the viewport width */
-  }
-
-  /* Extend background to cover scrolled area */
-  #app::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw; /* Full viewport width */
-    height: 100%; /* Full height of app */
-    background: white; /* Match app background */
-    z-index: -1; /* Behind content */
-    transform: translateX(-50%); /* Center if needed */
+    min-width: 100vw; /* Ensure table spans viewport */
   }
 }
