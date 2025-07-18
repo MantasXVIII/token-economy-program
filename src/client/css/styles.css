@@ -12,26 +12,7 @@ body {
   box-sizing: border-box; /* Include padding in width */
 }
 
-#grid-container {
-  @apply overflow-x-auto bg-white shadow-inner;
-  width: 100%;
-  max-width: 100%; /* Constrain to app width */
-  position: relative;
-  padding-bottom: 1px; /* Prevent collapse */
-}
-
-#grid-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: white;
-  z-index: -1;
-  min-width: 0; /* Dynamic width */
-}
-
+#grid-container,
 #history-table-container {
   @apply overflow-x-auto bg-white shadow-inner;
   width: 100%;
@@ -40,6 +21,7 @@ body {
   padding-bottom: 1px; /* Prevent collapse */
 }
 
+#grid-container::after,
 #history-table-container::after {
   content: '';
   position: absolute;
@@ -49,7 +31,7 @@ body {
   height: 100%;
   background: white;
   z-index: -1;
-  min-width: 0; /* Dynamic width */
+  min-width: 0; /* Default to dynamic width */
 }
 
 table {
