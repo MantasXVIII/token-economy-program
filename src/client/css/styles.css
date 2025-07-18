@@ -3,10 +3,20 @@
 
 body {
   @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
+  overflow-x: auto; /* Enable horizontal scrolling for the body */
+}
+
+#app {
+  @apply bg-white p-6 rounded shadow-md w-full max-w-4xl;
+  min-width: 0; /* Prevent overflow issues */
+  overflow-x: auto; /* Ensure table can scroll within app */
 }
 
 table {
   @apply w-full border-collapse;
+  margin-left: auto; /* Center the table */
+  margin-right: auto; /* Center the table */
+  min-width: 100%; /* Ensure table takes full width of scrollable area */
 }
 
 th, td {
@@ -33,24 +43,28 @@ button {
   @apply transition duration-200;
 }
 
-/* Media query for portrait mode */
-@media (orientation: portrait) and (max-width: 768px) {
-  #login,
+/* Responsive adjustments for portrait/narrow screens */
+@media (max-width: 768px) {
   #app {
-    display: none; /* Hide login and app in portrait on mobile */
+    @apply max-w-full; /* Remove max-width constraint on narrow screens */
+    padding: 1rem; /* Reduce padding for better fit */
   }
-  #portrait-hint {
-    display: block; /* Show hint in portrait */
-  }
-}
 
-/* Ensure landscape mode works as intended */
-@media (orientation: landscape) {
-  #login,
-  #app {
-    display: block; /* Ensure content is visible in landscape */
+  table {
+    width: auto; /* Allow table to size based on content in narrow view */
+    min-width: 100vw; /* Ensure table spans the viewport width */
   }
-  #portrait-hint {
-    display: none; /* Hide hint in landscape */
+
+  /* Extend background to cover scrolled area */
+  #app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw; /* Full viewport width */
+    height: 100%; /* Full height of app */
+    background: white; /* Match app background */
+    z-index: -1; /* Behind content */
+    transform: translateX(-50%); /* Center if needed */
   }
 }
