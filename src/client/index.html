@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <div id="portrait-hint" class="hidden text-center text-xl font-bold text-red-500">
+    Please rotate to landscape for best experience.
+  </div>
   <div id="login" class="bg-white p-6 rounded shadow-md w-full max-w-md">
     <h1 class="text-2xl font-bold mb-4">Login</h1>
     <input id="username" type="text" placeholder="Username (editor/viewer)" class="w-full p-2 mb-2 border rounded">
@@ -22,7 +25,7 @@
         <tbody id="grid-body"></tbody>
       </table>
     </div>
-    <!-- Save button will be inserted here by JS -->
+    <button onclick="saveHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 mt-2">Save History</button>
     <button onclick="viewHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">View History</button>
     <div id="history" class="mt-4 hidden">
       <h2 class="text-xl font-bold mb-2">History</h2>

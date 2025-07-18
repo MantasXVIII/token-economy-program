@@ -1,3 +1,4 @@
+/* src/client/css/styles.css */
 @import 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css';
 
 body {
@@ -30,4 +31,26 @@ input[type="text"], input[type="password"], select {
 
 button {
   @apply transition duration-200;
+}
+
+/* Media query for portrait mode */
+@media (orientation: portrait) and (max-width: 768px) {
+  #login,
+  #app {
+    display: none; /* Hide login and app in portrait on mobile */
+  }
+  #portrait-hint {
+    display: block; /* Show hint in portrait */
+  }
+}
+
+/* Ensure landscape mode works as intended */
+@media (orientation: landscape) {
+  #login,
+  #app {
+    display: block; /* Ensure content is visible in landscape */
+  }
+  #portrait-hint {
+    display: none; /* Hide hint in landscape */
+  }
 }
