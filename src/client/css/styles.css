@@ -8,14 +8,13 @@ body {
 
 #app {
   @apply bg-white p-6 rounded shadow-md w-full;
-  max-width: 100%; /* Fit to screen, no fixed max */
+  max-width: 1280px; /* Reasonable desktop max width */
   box-sizing: border-box; /* Include padding in width */
 }
 
 #grid-container {
-  @apply overflow-x-auto bg-white shadow-inner;
+  @apply overflow-x-hidden bg-white shadow-inner;
   width: 100%;
-  /* Ensure background covers scrolled content */
   position: relative;
   padding-bottom: 1px; /* Prevent collapse */
 }
@@ -29,8 +28,7 @@ body {
   height: 100%;
   background: white;
   z-index: -1;
-  /* Dynamic min-width based on content */
-  min-width: 0;
+  min-width: 0; /* Default to dynamic width */
 }
 
 table {
@@ -69,7 +67,11 @@ button {
 /* Responsive adjustments for portrait/narrow screens */
 @media (max-width: 768px) {
   #app {
-    @apply p-4;
+    @apply max-w-full p-4;
+  }
+
+  #grid-container {
+    @apply overflow-x-auto; /* Enable scrolling in portrait */
   }
 
   table {
