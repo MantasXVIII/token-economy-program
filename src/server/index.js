@@ -15,7 +15,7 @@ const DEFAULT_GRID = {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    console.log(`Request for: ${url.pathname}, Method: ${request.method}`); // Debugging log
+    console.log(`Request for: ${url.pathname}, Method: ${request.method}`);
 
     async function authenticate() {
       const authHeader = request.headers.get('Authorization');
@@ -74,7 +74,7 @@ export default {
     }
 
     if (url.pathname === '/login' && request.method === 'POST') {
-      console.log('Handling login request'); // Debugging log
+      console.log('Handling login request');
       try {
         const { username, password } = await request.json();
         console.log(`Login attempt: ${username}, ${password ? 'password set' : 'no password'}`);
@@ -99,6 +99,32 @@ export default {
         console.error('Login error:', e);
         return new Response(JSON.stringify({ error: 'Invalid request' }), {
           status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    if (url.pathname === '/save-history' && request.method === 'POST') {
+      const user = await authenticate();
+      if (user instanceof Response) return user;
+      if (user.role !== 'editor') {
+        return new Response(JSON.stringify({ error: 'Only editors can save history' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      try {
+        const currentGrid = await env.GRID_KV.get('grid/current', { type: 'json' }) || JSON.parse(JSON.stringify(DEFAULT_GRID));
+        const date = new Date().toISOString().split('T')[0]; // Current date as YYYY-MM-DD
+        const weekKey = `history/${date}`;
+        await env.GRID_KV.put(weekKey, JSON.stringify(currentGrid));
+        return new Response(JSON.stringify({ success: true, week: date }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (e) {
+        console.error('Save history error:', e);
+        return new Response(JSON.stringify({ error: 'Failed to save history' }), {
+          status: 500,
           headers: { 'Content-Type': 'application/json' },
         });
       }

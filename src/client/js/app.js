@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      console.log('Login response:', await response.text()); // Log raw response
-      const data = await response.json(); // This will throw if not JSON
+      console.log('Login response:', await response.text());
+      const data = await response.json();
       if (data.token) {
         token = data.token;
         role = data.role;
@@ -142,6 +142,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error loading history data:', error);
     }
   }
+
+  async function saveHistory() {
+    try {
+      const response = await fetch('/save-history', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(`History saved for week ${data.week}`);
+        viewHistory(); // Refresh history dropdown
+      } else {
+        alert('Failed to save history: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error saving history:', error);
+      alert('Failed to save history due to an error');
+    }
+  }
+
+  // Add a save button to the DOM
+  const appDiv = document.getElementById('app');
+  const saveButton = document.createElement('button');
+  saveButton.textContent = 'Save History';
+  saveButton.className = 'bg-green-500 text-white p-2 rounded hover:bg-green-600 mt-2';
+  saveButton.onclick = saveHistory;
+  appDiv.insertBefore(saveButton, appDiv.children[2]); // Insert before the View History button
 
   window.login = login;
   window.updateTask = updateTask;
