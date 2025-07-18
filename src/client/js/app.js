@@ -33,7 +33,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = await response.json(); // Read once as JSON
+      const text = await response.text(); // Read as text first
+      console.log('Login response (raw):', text);
+      let data;
+      try {
+        data = JSON.parse(text); // Manually parse JSON
+      } catch (e) {
+        throw new Error('Invalid JSON response: ' + text);
+      }
       if (data.token) {
         token = data.token;
         role = data.role;
