@@ -24,6 +24,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     thead.innerHTML = headerHTML;
   }
 
+  // Dynamic background adjustment
+  function adjustBackground() {
+    const gridContainer = document.getElementById('grid-container');
+    const table = gridContainer.querySelector('table');
+    if (table) {
+      const scrollWidth = table.scrollWidth;
+      const before = gridContainer.querySelector('::before');
+      if (before) {
+        before.style.width = `${scrollWidth}px`;
+      } else {
+        const newBefore = document.createElement('div');
+        newBefore.style.cssText = `position: absolute; top: 0; left: 0; width: ${scrollWidth}px; height: 100%; background: white; z-index: -1;`;
+        gridContainer.insertBefore(newBefore, gridContainer.firstChild);
+      }
+    }
+  }
+
   async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -34,7 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      // Clone response to avoid body stream issues
       const clonedResponse = response.clone();
       const data = await clonedResponse.json();
       console.log('Login response data:', data);
@@ -47,6 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         generateTableHeader('grid-header');
         generateTableHeader('history-header');
         loadGrid();
+        adjustBackground(); // Adjust background after grid loads
       } else {
         alert('Login failed: ' + (data.error || 'Unknown error'));
       }
@@ -76,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         tbody.appendChild(row);
       }
+      adjustBackground(); // Adjust after each load
     } catch (error) {
       console.error('Error loading grid:', error);
     }
@@ -141,6 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         tbody.appendChild(row);
       }
+      adjustBackground(); // Adjust after history load
     } catch (error) {
       console.error('Error loading history data:', error);
     }

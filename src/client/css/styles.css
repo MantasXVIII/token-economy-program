@@ -3,19 +3,19 @@
 
 body {
   @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
-  overflow-x: auto; /* Enable horizontal scrolling */
+  overflow-x: auto;
 }
 
 #app {
   @apply bg-white p-6 rounded shadow-md w-full max-w-4xl;
-  position: relative; /* For background overlay */
-  min-width: 0; /* Prevent overflow issues */
+  position: relative;
+  min-width: 0;
 }
 
 #grid-container {
   @apply overflow-x-auto;
-  width: 100%; /* Ensure container takes full width */
-  position: relative; /* For background positioning */
+  width: 100%;
+  position: relative;
 }
 
 #grid-container::before {
@@ -23,19 +23,18 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%; /* Match container width initially */
-  height: 100%; /* Full height of container */
-  background: white; /* Match app background */
-  z-index: -1; /* Behind content */
-  /* Extend background for scrolling */
-  min-width: 100vw; /* Minimum viewport width */
-  transform: translateX(0); /* Reset any offset */
+  width: 100%; /* Initial width */
+  height: 100%;
+  background: white;
+  z-index: -1;
+  /* Ensure it extends with scrolling */
+  min-width: 0; /* Reset to allow dynamic adjustment */
 }
 
 table {
   @apply border-collapse;
-  width: 100%; /* Ensure table fills container */
-  min-width: 1000px; /* Minimum width to force scrolling, adjust as needed */
+  width: auto; /* Allow table to size based on content */
+  min-width: 1200px; /* Adjust based on your table's total width (e.g., 8 tasks) */
   margin: 0 auto; /* Center the table */
 }
 
@@ -66,15 +65,15 @@ button {
 /* Responsive adjustments for portrait/narrow screens */
 @media (max-width: 768px) {
   #app {
-    @apply max-w-full p-4; /* Full width, reduced padding */
+    @apply max-w-full p-4;
   }
 
   #grid-container::before {
-    width: 100vw; /* Full viewport width for scrolling */
-    transform: translateX(-50%) translateX(-1rem); /* Center and adjust for padding */
+    width: 200vw; /* Extend beyond viewport to cover scrolled area */
+    transform: translateX(-50%); /* Center the extended background */
   }
 
   table {
-    min-width: 100vw; /* Ensure table spans viewport */
+    min-width: 1200px; /* Match or exceed total content width */
   }
 }
