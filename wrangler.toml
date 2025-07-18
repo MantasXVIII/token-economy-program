@@ -7,5 +7,5 @@ compatibility_flags = ["nodejs_compat"]
 binding = "GRID_KV"
 id = "81af810e9ebe44828bf2849609f0551a"
 
-[[triggers]]
-schedules = ["0 0 * * 0"]
+[triggers]
+schedule = [{cron = "0 0 * * 0"}]
