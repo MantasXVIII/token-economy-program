@@ -12,9 +12,8 @@ body {
 }
 
 #grid-container {
-  @apply overflow-x-auto bg-white;
+  @apply overflow-x-auto bg-white shadow-inner;
   width: 100%;
-  /* Ensure background covers scrolled content */
   position: relative;
   padding-bottom: 1px; /* Prevent collapse */
 }
@@ -28,15 +27,39 @@ body {
   height: 100%;
   background: white;
   z-index: -1;
-  /* Extend with min-width based on table */
-  min-width: 1200px; /* Match table min-width */
+  min-width: 0; /* Default to dynamic width */
 }
 
 table {
   @apply border-collapse;
   width: 100%;
-  min-width: 1200px; /* Fixed width to accommodate 8 tasks + Day */
   margin: 0 auto; /* Center the table */
+}
+
+/* Apply min-width only in portrait/mobile views */
+@media (max-width: 768px) {
+  #app {
+    @apply max-w-full p-4;
+  }
+
+  table {
+    min-width: 1200px; /* Fixed width for portrait to ensure all tasks fit */
+  }
+
+  #grid-container::after {
+    min-width: 1200px; /* Match table min-width */
+  }
+}
+
+/* Ensure no min-width on desktop */
+@media (min-width: 769px) {
+  table {
+    min-width: 0; /* Remove min-width on desktop */
+  }
+
+  #grid-container::after {
+    min-width: 0; /* Remove min-width on desktop */
+  }
 }
 
 th, td {
@@ -61,19 +84,4 @@ input[type="text"], input[type="password"], select {
 
 button {
   @apply transition duration-200;
-}
-
-/* Responsive adjustments for portrait/narrow screens */
-@media (max-width: 768px) {
-  #app {
-    @apply max-w-full p-4;
-  }
-
-  #grid-container::after {
-    min-width: 1200px; /* Ensure it matches table width */
-  }
-
-  table {
-    min-width: 1200px; /* Consistent width */
-  }
 }
