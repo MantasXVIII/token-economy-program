@@ -1,4 +1,4 @@
-mport jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { UI_HTML } from '../utils/ui_html.js';
 
 const DEFAULT_GRID = {
