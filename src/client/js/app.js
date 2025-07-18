@@ -27,14 +27,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    console.log('Attempting login with:', { username, password: '****' }); // Mask password
+    console.log('Attempting login with:', { username, password: '****' });
     try {
       const response = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = await response.json(); // Single read
+      // Clone response to avoid body stream issues
+      const clonedResponse = response.clone();
+      const data = await clonedResponse.json();
       console.log('Login response data:', data);
       if (response.ok && data.token) {
         token = data.token;
