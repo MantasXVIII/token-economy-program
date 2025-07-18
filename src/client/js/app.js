@@ -27,16 +27,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    console.log('Attempting login with:', { username, password: '****' }); // Mask password
     try {
       const response = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      const data = await response.json(); // Single read as JSON
-      console.log('Login data:', data); // Log the parsed data
-      if (data.token) {
+      const data = await response.json(); // Single read
+      console.log('Login response data:', data);
+      if (response.ok && data.token) {
         token = data.token;
         role = data.role;
         document.getElementById('login').classList.add('hidden');
