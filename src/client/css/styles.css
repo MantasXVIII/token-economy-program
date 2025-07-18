@@ -31,6 +31,25 @@ body {
   min-width: 0; /* Default to dynamic width */
 }
 
+#history-table-container {
+  @apply overflow-x-hidden bg-white shadow-inner;
+  width: 100%;
+  position: relative;
+  padding-bottom: 1px; /* Prevent collapse */
+}
+
+#history-table-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; /* Initial width */
+  height: 100%;
+  background: white;
+  z-index: -1;
+  min-width: 0; /* Default to dynamic width */
+}
+
 table {
   @apply border-collapse;
   width: 100%;
@@ -74,11 +93,16 @@ button {
     @apply overflow-x-auto; /* Enable scrolling in portrait */
   }
 
+  #history-table-container {
+    @apply overflow-x-auto; /* Enable scrolling in portrait */
+  }
+
   table {
     min-width: 1200px; /* Force width for 8 tasks in portrait */
   }
 
-  #grid-container::after {
+  #grid-container::after,
+  #history-table-container::after {
     min-width: 1200px; /* Match table min-width */
   }
 }

@@ -27,10 +27,12 @@
     <div id="history" class="mt-4 hidden">
       <h2 class="text-xl font-bold mb-2">History</h2>
       <select id="history-select" onchange="loadHistory()" class="w-full p-2 mb-2 border rounded"></select>
-      <table class="w-full border-collapse">
-        <thead id="history-header"></thead>
-        <tbody id="history-body"></tbody>
-      </table>
+      <div id="history-table-container" class="overflow-x-auto bg-white shadow-inner">
+        <table class="w-full border-collapse">
+          <thead id="history-header"></thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
   <script src="/js/app.js"></script>
