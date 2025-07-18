@@ -15,7 +15,7 @@ const DEFAULT_GRID = {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    console.log(`Request for: ${url.pathname}`); // Debugging log
+    console.log(`Request for: ${url.pathname}, Method: ${request.method}`); // Debugging log
 
     async function authenticate() {
       const authHeader = request.headers.get('Authorization');
@@ -63,16 +63,127 @@ export default {
       const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
       if (!tasks) {
         console.log('Tasks not found in KV');
-        return new Response('Tasks not found', { status: 404 });
+        return new Response(JSON.stringify({ error: 'Tasks not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
       return new Response(JSON.stringify(tasks), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // ... (rest of the fetch logic remains the same)
+    if (url.pathname === '/login' && request.method === 'POST') {
+      console.log('Handling login request'); // Debugging log
+      try {
+        const { username, password } = await request.json();
+        console.log(`Login attempt: ${username}, ${password ? 'password set' : 'no password'}`);
+        let role = null;
+        if (username === 'editor' && password === env.EDITOR_PASSWORD) {
+          role = 'editor';
+        } else if (username === 'viewer' && password === env.VIEWER_PASSWORD) {
+          role = 'viewer';
+        }
+        if (role) {
+          const token = jwt.sign({ role }, env.JWT_SECRET, { expiresIn: '1d' });
+          return new Response(JSON.stringify({ token, role }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        } else {
+          return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      } catch (e) {
+        console.error('Login error:', e);
+        return new Response(JSON.stringify({ error: 'Invalid request' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
-    return new Response('Not found', { status: 404 });
+    if (url.pathname === '/grid') {
+      const user = await authenticate();
+      if (user instanceof Response) return user;
+
+      if (request.method === 'GET') {
+        let grid = await env.GRID_KV.get('grid/current', { type: 'json' });
+        if (!grid) {
+          const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
+          grid = JSON.parse(JSON.stringify(DEFAULT_GRID));
+          Object.keys(grid).forEach(day => {
+            tasks.forEach((_, index) => {
+              grid[day][`task${index + 1}`] = false;
+            });
+          });
+          await env.GRID_KV.put('grid/current', JSON.stringify(grid));
+        }
+        return new Response(JSON.stringify(grid), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (request.method === 'PUT' && user.role === 'editor') {
+        const { day, task, value } = await request.json();
+        let grid = await env.GRID_KV.get('grid/current', { type: 'json' }) || JSON.parse(JSON.stringify(DEFAULT_GRID));
+        if (grid[day] && grid[day][task] !== undefined) {
+          grid[day][task] = value;
+          await env.GRID_KV.put('grid/current', JSON.stringify(grid));
+        }
+        return new Response(JSON.stringify(grid), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ error: 'Method not allowed or insufficient permissions' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    if (url.pathname.startsWith('/history')) {
+      const user = await authenticate();
+      if (user instanceof Response) return user;
+
+      if (url.pathname === '/history' && request.method === 'GET') {
+        const keys = await env.GRID_KV.list({ prefix: 'history/' });
+        const history = keys.keys.map(key => ({ week: key.name.replace('history/', '') }));
+        return new Response(JSON.stringify(history), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (url.pathname.match(/^\/history\/\d{4}-\d{2}-\d{2}$/)) {
+        const week = url.pathname.split('/').pop();
+        if (request.method === 'GET') {
+          const grid = await env.GRID_KV.get(`history/${week}`, { type: 'json' });
+          if (!grid) {
+            return new Response(JSON.stringify({ error: 'History not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+          }
+          return new Response(JSON.stringify(grid), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (request.method === 'PUT' && user.role === 'editor') {
+          const { day, task, value } = await request.json();
+          let grid = await env.GRID_KV.get(`history/${week}`, { type: 'json' });
+          if (!grid) {
+            return new Response(JSON.stringify({ error: 'History not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+          }
+          if (grid[day] && grid[day][task] !== undefined) {
+            grid[day][task] = value;
+            await env.GRID_KV.put(`history/${week}`, JSON.stringify(grid));
+          }
+          return new Response(JSON.stringify(grid), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
   },
 
   async scheduled(event, env, ctx) {
