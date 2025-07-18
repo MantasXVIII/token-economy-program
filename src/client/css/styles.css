@@ -16,7 +16,9 @@ table {
   @apply w-full border-collapse;
   margin-left: auto; /* Center the table */
   margin-right: auto; /* Center the table */
-  min-width: 100%; /* Ensure table takes full width of scrollable area */
+  min-width: 100%; /* Ensure table takes full width of scrollable area */ 
+  @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
+  overflow-x: auto; /* Enable horizontal scrolling for the body */
 }
 
 th, td {
