@@ -33,8 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      console.log('Login response:', await response.text());
-      const data = await response.json();
+      const data = await response.json(); // Read once as JSON
       if (data.token) {
         token = data.token;
         role = data.role;
@@ -162,7 +161,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Add a save button to the DOM
   const appDiv = document.getElementById('app');
   const saveButton = document.createElement('button');
   saveButton.textContent = 'Save History';
