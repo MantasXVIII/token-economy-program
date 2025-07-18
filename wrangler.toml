@@ -8,4 +8,4 @@ binding = "GRID_KV"
 id = "81af810e9ebe44828bf2849609f0551a"
 
 [triggers]
-schedule = {[cron = "0 0 * * 0"]}
+crons = ["0 0 * * 0"]
