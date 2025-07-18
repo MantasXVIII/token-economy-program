@@ -1,4 +1,4 @@
-// src/client/js/app.js (unchanged)
+// src/client/js/app.js
 document.addEventListener('DOMContentLoaded', async () => {
   let token = null;
   let role = null;
@@ -22,6 +22,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     headerHTML += '</tr>';
     thead.innerHTML = headerHTML;
+  }
+
+  function adjustContainer(containerId) {
+    const container = document.getElementById(containerId);
+    const table = container.querySelector('table');
+    if (table) {
+      container.style.width = `${table.scrollWidth}px`; // Match table width
+      container.style.minWidth = '100%'; // Ensure it fills the parent
+    }
   }
 
   async function login() {
@@ -75,6 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         tbody.appendChild(row);
       }
+      adjustContainer('grid-container'); // Adjust after loading
     } catch (error) {
       console.error('Error loading grid:', error);
     }
@@ -140,6 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         tbody.appendChild(row);
       }
+      adjustContainer('history-table-container'); // Adjust after loading history
     } catch (error) {
       console.error('Error loading history data:', error);
     }

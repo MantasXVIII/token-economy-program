@@ -10,6 +10,7 @@ body {
   @apply bg-white p-6 rounded shadow-md w-full;
   max-width: 1280px; /* Reasonable desktop max width */
   box-sizing: border-box; /* Include padding in width */
+  overflow-x: hidden; /* Contain overflow */
 }
 
 #grid-container,
@@ -19,6 +20,7 @@ body {
   max-width: 100%; /* Constrain to app width */
   position: relative;
   padding-bottom: 1px; /* Prevent collapse */
+  display: block; /* Ensure block-level behavior */
 }
 
 #grid-container::after,
@@ -75,11 +77,11 @@ button {
 
   #grid-container,
   #history-table-container {
-    @apply overflow-x-auto; /* Enable scrolling in portrait */
+    @apply overflow-x-auto; /* Ensure scrolling */
   }
 
   table {
-    min-width: 1200px; /* Force width for 8 tasks in portrait */
+    min-width: 1200px; /* Force width for 8 tasks */
   }
 
   #grid-container::after,
