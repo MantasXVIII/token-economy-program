@@ -8,17 +8,18 @@ body {
 
 #app {
   @apply bg-white p-6 rounded shadow-md w-full max-w-4xl;
-  position: relative;
   min-width: 0;
 }
 
 #grid-container {
-  @apply overflow-x-auto;
+  @apply overflow-x-auto bg-white;
   width: 100%;
+  /* Ensure background covers scrolled content */
   position: relative;
+  padding-bottom: 1px; /* Prevent collapse */
 }
 
-#grid-container::before {
+#grid-container::after {
   content: '';
   position: absolute;
   top: 0;
@@ -27,14 +28,14 @@ body {
   height: 100%;
   background: white;
   z-index: -1;
-  /* Ensure it extends with scrolling */
-  min-width: 0; /* Reset to allow dynamic adjustment */
+  /* Extend with min-width based on table */
+  min-width: 1200px; /* Match table min-width */
 }
 
 table {
   @apply border-collapse;
-  width: auto; /* Allow table to size based on content */
-  min-width: 1200px; /* Adjust based on your table's total width (e.g., 8 tasks) */
+  width: 100%;
+  min-width: 1200px; /* Fixed width to accommodate 8 tasks + Day */
   margin: 0 auto; /* Center the table */
 }
 
@@ -68,12 +69,11 @@ button {
     @apply max-w-full p-4;
   }
 
-  #grid-container::before {
-    width: 200vw; /* Extend beyond viewport to cover scrolled area */
-    transform: translateX(-50%); /* Center the extended background */
+  #grid-container::after {
+    min-width: 1200px; /* Ensure it matches table width */
   }
 
   table {
-    min-width: 1200px; /* Match or exceed total content width */
+    min-width: 1200px; /* Consistent width */
   }
 }
