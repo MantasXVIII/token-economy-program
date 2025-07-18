@@ -3,17 +3,19 @@
 
 body {
   @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
-  overflow-x: auto;
+  overflow-x: hidden; /* Prevent body-level scrolling */
 }
 
 #app {
-  @apply bg-white p-6 rounded shadow-md w-full max-w-4xl;
-  min-width: 0;
+  @apply bg-white p-6 rounded shadow-md w-full;
+  max-width: 100%; /* Fit to screen, no fixed max */
+  box-sizing: border-box; /* Include padding in width */
 }
 
 #grid-container {
   @apply overflow-x-auto bg-white shadow-inner;
   width: 100%;
+  /* Ensure background covers scrolled content */
   position: relative;
   padding-bottom: 1px; /* Prevent collapse */
 }
@@ -27,43 +29,21 @@ body {
   height: 100%;
   background: white;
   z-index: -1;
-  min-width: 0; /* Default to dynamic width */
+  /* Dynamic min-width based on content */
+  min-width: 0;
 }
 
 table {
   @apply border-collapse;
   width: 100%;
+  min-width: 0; /* Allow natural sizing */
   margin: 0 auto; /* Center the table */
-}
-
-/* Apply min-width only in portrait/mobile views */
-@media (max-width: 768px) {
-  #app {
-    @apply max-w-full p-4;
-  }
-
-  table {
-    min-width: 1200px; /* Fixed width for portrait to ensure all tasks fit */
-  }
-
-  #grid-container::after {
-    min-width: 1200px; /* Match table min-width */
-  }
-}
-
-/* Ensure no min-width on desktop */
-@media (min-width: 769px) {
-  table {
-    min-width: 0; /* Remove min-width on desktop */
-  }
-
-  #grid-container::after {
-    min-width: 0; /* Remove min-width on desktop */
-  }
+  table-layout: auto; /* Adjust columns based on content */
 }
 
 th, td {
   @apply border p-2;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
 th {
@@ -84,4 +64,19 @@ input[type="text"], input[type="password"], select {
 
 button {
   @apply transition duration-200;
+}
+
+/* Responsive adjustments for portrait/narrow screens */
+@media (max-width: 768px) {
+  #app {
+    @apply p-4;
+  }
+
+  table {
+    min-width: 1200px; /* Force width for 8 tasks in portrait */
+  }
+
+  #grid-container::after {
+    min-width: 1200px; /* Match table min-width */
+  }
 }

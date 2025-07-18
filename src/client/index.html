@@ -1,4 +1,4 @@
-<!-- src/client/index.html (unchanged) -->
+<!-- src/client/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,20 +14,21 @@
     <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-2 border rounded">
     <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Login</button>
   </div>
-  <div id="app" class="hidden bg-white p-6 rounded shadow-md w-full max-w-4xl">
+  <div id="app" class="hidden bg-white p-6 rounded shadow-md w-full">
     <h1 class="text-2xl font-bold mb-4">Token Economy</h1>
     <div id="grid-container" class="overflow-x-auto bg-white shadow-inner">
-      <table class="w-full border-collapse min-w-[1200px]">
+      <table class="w-full border-collapse">
         <thead id="grid-header"></thead>
         <tbody id="grid-body"></tbody>
       </table>
     </div>
-    <button onclick="saveHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 mt-2">Save History</button>
+    <!-- Move Save History button to HTML to prevent duplication -->
+    <button id="save-history-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 mt-2">Save History</button>
     <button onclick="viewHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">View History</button>
     <div id="history" class="mt-4 hidden">
       <h2 class="text-xl font-bold mb-2">History</h2>
       <select id="history-select" onchange="loadHistory()" class="w-full p-2 mb-2 border rounded"></select>
-      <table class="w-full border-collapse min-w-[1200px]">
+      <table class="w-full border-collapse">
         <thead id="history-header"></thead>
         <tbody id="history-body"></tbody>
       </table>
