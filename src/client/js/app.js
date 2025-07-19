@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function showTaskDescription(taskIndex) {
     if (taskIndex >= 0 && taskIndex < tasks.length) {
       const task = tasks[taskIndex];
-      console.log('Showing description for:', task.name, 'Description:', task.description');
+      console.log('Showing description for:', task.name, 'Description:', task.description);
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
       const descriptionDiv = document.getElementById('task-description');
