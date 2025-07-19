@@ -40,21 +40,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Add click event listeners to task headers
     document.querySelectorAll('.task-header').forEach(header => {
-      header.addEventListener('click', () => showTaskDescription(header.dataset.task));
+      header.addEventListener('click', () => {
+        const taskNum = header.dataset.task;
+        showTaskDescription(taskNum);
+      });
     });
   }
 
   function showTaskDescription(taskNum) {
-    const task = tasks.find(t => t.name === `Task ${taskNum}`);
+    const task = tasks.find(t => t.name === `Task ${parseInt(taskNum)}`);
     if (task) {
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
       const descriptionDiv = document.getElementById('task-description');
       descriptionDiv.classList.remove('hidden');
-      // Ensure content fits
       descriptionDiv.querySelector('.bg-white').scrollTop = 0; // Reset scroll
     } else {
-      console.error('Task not found:', taskNum);
+      console.error('Task not found for taskNum:', taskNum, 'Available tasks:', tasks);
     }
   }
 

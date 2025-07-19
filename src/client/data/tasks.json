@@ -1,12 +1,12 @@
 [
   {
     "name": "Morning routine",
-    "description": "You have to make your bed neatly. The blanket has to be straight without any wrinkles. Then, you do exercise with Mantas. Exercise means 4 sets with 1 minute break between sets of an exercise Mantas decides. For eaxmple a set of squats is 20 squats and then a 1 minute break.",
+    "description": "You have to make your bed neatly. The blanket has to be straight without any wrinkles. Then, you do exercise with Mantas. Exercise means 4 sets with 1 minute break between sets of an exercise Mantas decides. For example a set of squats is 20 squats and then a 1 minute break.",
     "points": 10
   },
   {
     "name": "Breakfast",
-    "description": "You have to make your breakfast, or make breakfast with the help of an adult. Breakfast is a small meal of 3 eggs with any side you want like tomatos. Once you make breakfast, you have to eat all of your breakfast and tidy up the table after yourself.",
+    "description": "You have to make your breakfast, or make breakfast with the help of an adult. Breakfast is a small meal of 3 eggs with any side you want like tomatoes. Once you make breakfast, you have to eat all of your breakfast and tidy up the table after yourself.",
     "points": 10
   },
   {
@@ -26,7 +26,7 @@
   },
   {
     "name": "Sleep alone",
-    "description": "You must sleep alone. You must not wake anyone up UNLESS it is an EMERGENCY. An emergency is if you are sick, or if there is something happening in the house. If there is an emergency, you must not wake anyone up. If you go to the bathroom, you must try your best to do it quitely without going into anyone else's room.",
+    "description": "You must sleep alone. You must not wake anyone up UNLESS it is an EMERGENCY. An emergency is if you are sick, or if there is something happening in the house. If there is an emergency, you must not wake anyone up. If you go to the bathroom, you must try your best to do it quietly without going into anyone else's room.",
     "points": 10
   }
 ]
