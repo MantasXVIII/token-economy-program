@@ -38,10 +38,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     headerHTML += '</tr>';
     thead.innerHTML = headerHTML;
 
-    // Add click event listeners to task headers
+    // Add click event listeners to task headers with logging
     document.querySelectorAll('.task-header').forEach(header => {
       header.addEventListener('click', () => {
         const taskNum = header.dataset.task;
+        console.log('Clicked task:', taskNum, 'Tasks array:', tasks); // Debug log
         showTaskDescription(taskNum);
       });
     });
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function showTaskDescription(taskNum) {
     const task = tasks.find(t => t.name === `Task ${parseInt(taskNum)}`);
     if (task) {
+      console.log('Showing description for:', task.name, 'Description:', task.description); // Debug log
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
       const descriptionDiv = document.getElementById('task-description');
