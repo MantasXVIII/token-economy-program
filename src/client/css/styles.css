@@ -12,24 +12,20 @@ body {
 }
 
 #target-container {
-  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white p-6 rounded-lg mb-6 shadow-lg flex items-center justify-between w-full max-w-4xl;
-  min-height: 150px;
-}
-
-#target-container h2 {
-  @apply text-2xl font-bold;
+  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white p-6 rounded-lg mb-6 shadow-lg flex flex-col items-center justify-center w-full max-w-4xl;
+  min-height: 200px;
 }
 
 #target-image {
-  @apply h-32 w-auto ml-4 rounded;
+  @apply h-48 w-auto mb-4 rounded;
 }
 
 #current-target {
-  @apply flex-1 text-lg;
+  @apply text-center;
 }
 
 #target-value {
-  @apply ml-2 font-semibold;
+  @apply ml-0 font-semibold text-2xl;
 }
 
 #grid-container,
@@ -136,11 +132,11 @@ button {
 
   #target-container {
     @apply flex-col;
-    min-height: 100px;
+    min-height: 150px;
   }
 
   #target-image {
-    @apply h-20;
+    @apply h-32;
   }
 
   #grid-container,

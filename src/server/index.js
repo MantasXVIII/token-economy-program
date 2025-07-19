@@ -251,7 +251,41 @@ export default {
         }
       }
 
-      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
+      if (url.pathname === '/history/targets' && request.method === 'GET') {
+        const keys = await env.GRID_KV.list({ prefix: 'target/' });
+        const targets = keys.keys.map(async key => {
+          const data = await env.GRID_KV.get(key.name, { type: 'json' });
+          return data;
+        });
+        return new Response(JSON.stringify(await Promise.all(targets)), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (url.pathname === '/history/targets' && request.method === 'POST') {
+        const user = await authenticate();
+        if (user instanceof Response) return user;
+        if (user.role !== 'editor') {
+          return new Response(JSON.stringify({ error: 'Only editors can add targets' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        try {
+          const { target, achieved, date } = await request.json();
+          const targetKey = `target/${date}`;
+          await env.GRID_KV.put(targetKey, JSON.stringify({ target, achieved, date }));
+          return new Response(JSON.stringify({ success: true }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        } catch (e) {
+          console.error('Add target error:', e);
+          return new Response(JSON.stringify({ error: 'Failed to add target' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+      }
     }
 
     return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });

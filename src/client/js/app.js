@@ -40,6 +40,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  async function fetchHistoricalTargets() {
+    try {
+      const response = await fetch('/history/targets', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        return await response.json();
+      } else {
+        console.warn('No historical targets found');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching historical targets:', error);
+      return [];
+    }
+  }
+
   function generateTableHeader(containerId) {
     const thead = document.getElementById(containerId);
     let headerHTML = '<tr>';
@@ -93,17 +110,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('weekly-progress').textContent = `Weekly Total: ${total} points | Total to Target: ${total} / ${targetValue} | Overall Total: ${overallTotal} points`;
   };
 
-  function calculateWeeklyTotalForHistory(grid) {
+  async function updateOverallTotal() {
     let total = 0;
-    for (const day in grid) {
-      tasks.forEach((task, index) => {
-        const taskKey = `task${index + 1}`;
-        if (grid[day][taskKey]) {
-          total += task.points;
+    const historyResponse = await fetch('/history', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (historyResponse.ok) {
+      const history = await historyResponse.json();
+      for (const { week } of history) {
+        const weekData = await fetch(`/history/${week}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (weekData.ok) {
+          const grid = await weekData.json();
+          for (const day in grid) {
+            tasks.forEach((task, index) => {
+              const taskKey = `task${index + 1}`;
+              if (grid[day][taskKey]) {
+                total += task.points;
+              }
+            });
+          }
         }
-      });
+      }
     }
-    return total;
+    overallTotal = total; // Update global variable
+    updateWeeklyTotal(); // Reflect in UI
   }
 
   async function login() {
@@ -124,12 +156,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         role = data.role;
         document.getElementById('login').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        await Promise.all([fetchTasks(), fetchTarget()]); // Fetch both in parallel
+        await Promise.all([fetchTasks(), fetchTarget(), fetchHistoricalTargets(), updateOverallTotal()]); // Fetch all data
         generateTableHeader('grid-header');
         generateTableHeader('history-header');
         loadGrid();
         updateWeeklyTotal(); // Initialize total
-        updateOverallTotal(); // Initialize overall total
       } else {
         alert('Login failed: ' + (data.error || 'Unknown error'));
       }
@@ -171,6 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (response.ok) {
             cell.classList.toggle('completed', currentValue);
             updateWeeklyTotal();
+            await updateOverallTotal(); // Update overall total after grid change
           }
         });
       });
@@ -252,10 +284,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           const response = await updateTask('history', day, task, currentValue);
           if (response.ok) {
             cell.classList.toggle('completed', currentValue);
+            await updateOverallTotal(); // Update overall total after history change
           }
         });
       });
-      updateOverallTotal(); // Update overall total after loading history
+      await updateOverallTotal(); // Update overall total after loading history
       // Ensure container adjusts after loading
       const container = document.getElementById('history-table-container');
       const table = container.querySelector('table');
@@ -269,11 +302,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updateOverallTotal() {
     let total = 0;
-    const historyItems = document.querySelectorAll('#history-body .task-cell.completed');
-    historyItems.forEach(item => {
-      const points = parseInt(item.textContent) || 0;
-      total += points;
+    const historyResponse = await fetch('/history', {
+      headers: { Authorization: `Bearer ${token}` },
     });
+    if (historyResponse.ok) {
+      const history = await historyResponse.json();
+      for (const { week } of history) {
+        const weekData = await fetch(`/history/${week}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (weekData.ok) {
+          const grid = await weekData.json();
+          for (const day in grid) {
+            tasks.forEach((task, index) => {
+              const taskKey = `task${index + 1}`;
+              if (grid[day][taskKey]) {
+                total += task.points;
+              }
+            });
+          }
+        }
+      }
+    }
     overallTotal = total; // Update global variable
     updateWeeklyTotal(); // Reflect in UI
   }
@@ -288,6 +338,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (data.success) {
         alert(`History saved for week ${data.week}`);
         viewHistory(); // Refresh history dropdown
+        await updateOverallTotal(); // Update overall total after saving
       } else {
         alert('Failed to save history: ' + data.error);
       }
@@ -300,7 +351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('target-reached-btn').addEventListener('click', async () => {
     overallTotal = 0;
     updateWeeklyTotal(); // Reset overall total in UI
-    // Attempt to reset grid on server (optional, depends on server support)
+    // Attempt to reset grid on server
     try {
       const response = await fetch('/grid/reset', {
         method: 'POST',
@@ -308,6 +359,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (response.ok) {
         await loadGrid(); // Reload grid to reflect reset
+        // Record achieved target
+        const now = new Date().toISOString().split('T')[0];
+        const targetData = { target: target.target, achieved: true, date: now };
+        await fetch('/history/targets', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(targetData),
+        });
+        await fetchHistoricalTargets(); // Refresh historical targets
       }
     } catch (error) {
       console.error('Error resetting grid:', error);
