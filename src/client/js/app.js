@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function showTaskDescription(task Ascertain(taskIndex) {
+  function showTaskDescription(taskIndex) {
     if (taskIndex >= 0 && taskIndex < tasks.length) {
       const task = tasks[taskIndex];
       console.log('Showing description for:', task.name, 'Description:', task.description);
