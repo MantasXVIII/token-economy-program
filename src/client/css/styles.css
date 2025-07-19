@@ -74,12 +74,14 @@ td {
 
 /* Style for task cells */
 .task-cell {
-  @apply p-2;
+  @apply p-2 text-white;
   transition: background-color 0.2s;
+  background-color: #a0aec0; /* Grey by default */
+  min-width: 100px; /* Ensure minimum width for readability */
 }
 
 .task-cell.completed {
-  @apply bg-green-500 text-white;
+  @apply bg-green-500;
 }
 
 .task-cell:not(.completed) {
