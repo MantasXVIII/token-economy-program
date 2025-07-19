@@ -11,16 +11,25 @@ body {
   box-sizing: border-box; /* Include padding in width */
 }
 
-#current-target {
-  @apply mb-4 text-lg font-semibold flex items-center;
+#target-container {
+  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white p-6 rounded-lg mb-6 shadow-lg flex items-center justify-between w-full max-w-4xl;
+  min-height: 150px;
 }
 
-#target-value {
-  @apply ml-2;
+#target-container h2 {
+  @apply text-2xl font-bold;
 }
 
 #target-image {
-  @apply ml-2 h-12 w-auto;
+  @apply h-32 w-auto ml-4 rounded;
+}
+
+#current-target {
+  @apply flex-1 text-lg;
+}
+
+#target-value {
+  @apply ml-2 font-semibold;
 }
 
 #grid-container,
@@ -62,6 +71,7 @@ th, td {
   @apply border p-2;
   white-space: nowrap; /* Prevent text wrapping */
   cursor: pointer; /* Indicate clickable tasks */
+  border: 2px solid #000; /* Black border */
 }
 
 th {
@@ -74,10 +84,11 @@ td {
 
 /* Style for task cells */
 .task-cell {
-  @apply p-2 text-white;
+  @apply p-2 text-white flex items-center justify-center;
   transition: background-color 0.2s;
   background-color: #a0aec0; /* Grey by default */
   min-width: 100px; /* Ensure minimum width for readability */
+  height: 60px; /* Consistent height for centering */
 }
 
 .task-cell.completed {
@@ -121,6 +132,15 @@ button {
 @media (max-width: 768px) {
   #app {
     @apply max-w-full p-4;
+  }
+
+  #target-container {
+    @apply flex-col;
+    min-height: 100px;
+  }
+
+  #target-image {
+    @apply h-20;
   }
 
   #grid-container,

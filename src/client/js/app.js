@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function showTaskDescription(taskIndex) {
     if (taskIndex >= 0 && taskIndex < tasks.length) {
       const task = tasks[taskIndex];
-      console.log('Showing description for:', task.name, 'Description:', task.description);
+      console.log('Showing description for:', task.name, 'Description:', task.description');
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
       const descriptionDiv = document.getElementById('task-description');
@@ -297,9 +297,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  document.getElementById('target-reached-btn').addEventListener('click', () => {
+  document.getElementById('target-reached-btn').addEventListener('click', async () => {
     overallTotal = 0;
-    updateWeeklyTotal(); // Reset overall total
+    updateWeeklyTotal(); // Reset overall total in UI
+    // Attempt to reset grid on server (optional, depends on server support)
+    try {
+      const response = await fetch('/grid/reset', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        await loadGrid(); // Reload grid to reflect reset
+      }
+    } catch (error) {
+      console.error('Error resetting grid:', error);
+    }
     alert('Target reached! Progress has been reset.');
   });
 

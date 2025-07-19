@@ -181,6 +181,36 @@ export default {
       return new Response(JSON.stringify({ error: 'Method not allowed or insufficient permissions' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
+    if (url.pathname === '/grid/reset' && request.method === 'POST') {
+      const user = await authenticate();
+      if (user instanceof Response) return user;
+      if (user.role !== 'editor') {
+        return new Response(JSON.stringify({ error: 'Only editors can reset grid' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      try {
+        const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
+        const newGrid = JSON.parse(JSON.stringify(DEFAULT_GRID));
+        Object.keys(newGrid).forEach(day => {
+          tasks.forEach((_, index) => {
+            newGrid[day][`task${index + 1}`] = false;
+          });
+        });
+        await env.GRID_KV.put('grid/current', JSON.stringify(newGrid));
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (e) {
+        console.error('Reset grid error:', e);
+        return new Response(JSON.stringify({ error: 'Failed to reset grid' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     if (url.pathname.startsWith('/history')) {
       const user = await authenticate();
       if (user instanceof Response) return user;
