@@ -33,6 +33,11 @@ body {
   min-width: 0; /* Default to dynamic width */
 }
 
+#weekly-total {
+  @apply mt-4 text-xl font-bold;
+  color: #2d3748; /* Dark gray for readability */
+}
+
 table {
   @apply border-collapse;
   width: 100%;

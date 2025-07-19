@@ -43,6 +43,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('task-description').classList.add('hidden');
   });
 
+  function updateWeeklyTotal() {
+    let total = 0;
+    const checkboxes = document.querySelectorAll('#grid-body input[type="checkbox"]:checked');
+    checkboxes.forEach(checkbox => {
+      const taskNum = checkbox.closest('td').cellIndex; // Get column index (1-based for tasks)
+      if (taskNum > 0 && taskNum <= tasks.length) {
+        total += tasks[taskNum - 1].points; // Subtract 1 for 0-based array
+      }
+    });
+    document.getElementById('weekly-total').textContent = `Weekly Total: ${total} points`;
+  }
+
   async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -65,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         generateTableHeader('grid-header');
         generateTableHeader('history-header');
         loadGrid();
+        updateWeeklyTotal(); // Initialize total
       } else {
         alert('Login failed: ' + (data.error || 'Unknown error'));
       }
@@ -90,10 +103,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           const taskKey = `task${index + 1}`;
           const checked = taskStates[taskKey] ? 'checked' : '';
           const disabled = role === 'viewer' ? 'disabled' : '';
-          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('grid', '${day}', '${taskKey}', this.checked)"></td>`;
+          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('grid', '${day}', '${taskKey}', this.checked); updateWeeklyTotal();"></td>`;
         });
         tbody.appendChild(row);
       }
+      updateWeeklyTotal(); // Update after loading
     } catch (error) {
       console.error('Error loading grid:', error);
     }
