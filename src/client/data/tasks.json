@@ -1,10 +1,34 @@
 [
-  "Task 1",
-  "Task 2",
-  "Task 3",
-  "Task 4",
-  "Task 5",
-  "Task 6",
-  "Task 7",
-  "Task 8"
+  {
+    "name": "Task 1",
+    "description": "This is a description of Task 1.."
+  },
+  {
+    "name": "Task 2",
+    "description": "This is a description of Task 2. "
+  },
+  {
+    "name": "Task 3",
+    "description": "This is a description of Task 3."
+  },
+  {
+    "name": "Task 4",
+    "description": "This is a description of Task 4. "
+  },
+  {
+    "name": "Task 5",
+    "description": "This is a description of Task 5. "
+  },
+  {
+    "name": "Task 6",
+    "description": "This is a description of Task 6. "
+  },
+  {
+    "name": "Task 7",
+    "description": "This is a description of Task 7. "
+  },
+  {
+    "name": "Task 8",
+    "description": "This is a description of Task 8. "
+  }
 ]

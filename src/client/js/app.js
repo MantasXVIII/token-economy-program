@@ -1,4 +1,3 @@
-// src/client/js/app.js
 document.addEventListener('DOMContentLoaded', async () => {
   let token = null;
   let role = null;
@@ -16,22 +15,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function generateTableHeader(containerId) {
     const thead = document.getElementById(containerId);
-    let headerHTML = '<tr><th class="border p-2">Day</th>';
+    let headerHTML = '<tr>';
+    headerHTML += '<th class="border p-2">Day</th>';
     tasks.forEach((task, index) => {
-      headerHTML += `<th class="border p-2">Task ${index + 1}</th>`;
+      const taskNum = index + 1;
+      headerHTML += `<th class="border p-2 task-header" data-task="${taskNum}">${task.name}</th>`;
     });
     headerHTML += '</tr>';
     thead.innerHTML = headerHTML;
+
+    // Add click event listeners to task headers
+    document.querySelectorAll('.task-header').forEach(header => {
+      header.addEventListener('click', () => showTaskDescription(header.dataset.task));
+    });
   }
 
-  function adjustContainer(containerId) {
-    const container = document.getElementById(containerId);
-    const table = container.querySelector('table');
-    if (table) {
-      container.style.width = `${table.scrollWidth}px`; // Match table width
-      container.style.minWidth = '100%'; // Ensure it fills the parent
+  function showTaskDescription(taskNum) {
+    const task = tasks.find(t => t.name === `Task ${taskNum}`);
+    if (task) {
+      document.getElementById('task-title').textContent = task.name;
+      document.getElementById('task-desc').textContent = task.description;
+      document.getElementById('task-description').classList.remove('hidden');
     }
   }
+
+  document.getElementById('close-description').addEventListener('click', () => {
+    document.getElementById('task-description').classList.add('hidden');
+  });
 
   async function login() {
     const username = document.getElementById('username').value;
@@ -84,7 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         tbody.appendChild(row);
       }
-      adjustContainer('grid-container'); // Adjust after loading
     } catch (error) {
       console.error('Error loading grid:', error);
     }
@@ -150,7 +159,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         tbody.appendChild(row);
       }
-      adjustContainer('history-table-container'); // Adjust after loading history
+      // Ensure container adjusts after loading
+      const container = document.getElementById('history-table-container');
+      const table = container.querySelector('table');
+      if (table) {
+        container.style.minWidth = `${table.scrollWidth}px`; // Match table width
+      }
     } catch (error) {
       console.error('Error loading history data:', error);
     }
