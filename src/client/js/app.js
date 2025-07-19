@@ -112,27 +112,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function updateOverallTotal() {
     let total = 0;
-    const historyResponse = await fetch('/history', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (historyResponse.ok) {
-      const history = await historyResponse.json();
-      for (const { week } of history) {
-        const weekData = await fetch(`/history/${week}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (weekData.ok) {
-          const grid = await weekData.json();
-          for (const day in grid) {
-            tasks.forEach((task, index) => {
-              const taskKey = `task${index + 1}`;
-              if (grid[day][taskKey]) {
-                total += task.points;
-              }
-            });
+    try {
+      const historyResponse = await fetch('/history', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (historyResponse.ok) {
+        const history = await historyResponse.json();
+        for (const { week } of history) {
+          const weekData = await fetch(`/history/${week}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (weekData.ok) {
+            const grid = await weekData.json();
+            for (const day in grid) {
+              tasks.forEach((task, index) => {
+                const taskKey = `task${index + 1}`;
+                if (grid[day][taskKey]) {
+                  total += task.points;
+                }
+              });
+            }
           }
         }
       }
+    } catch (error) {
+      console.error('Error updating overall total:', error);
     }
     overallTotal = total; // Update global variable
     updateWeeklyTotal(); // Reflect in UI
@@ -300,34 +304,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function updateOverallTotal() {
-    let total = 0;
-    const historyResponse = await fetch('/history', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (historyResponse.ok) {
-      const history = await historyResponse.json();
-      for (const { week } of history) {
-        const weekData = await fetch(`/history/${week}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (weekData.ok) {
-          const grid = await weekData.json();
-          for (const day in grid) {
-            tasks.forEach((task, index) => {
-              const taskKey = `task${index + 1}`;
-              if (grid[day][taskKey]) {
-                total += task.points;
-              }
-            });
-          }
-        }
-      }
-    }
-    overallTotal = total; // Update global variable
-    updateWeeklyTotal(); // Reflect in UI
-  }
-
   async function saveHistory() {
     try {
       const response = await fetch('/save-history', {
@@ -378,6 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Bind the existing button
   document.getElementById('save-history-btn').onclick = saveHistory;
 
+  // Expose functions to global scope
   window.login = login;
   window.updateTask = updateTask;
   window.viewHistory = viewHistory;
