@@ -41,16 +41,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Add click event listeners to task headers with logging
     document.querySelectorAll('.task-header').forEach(header => {
       header.addEventListener('click', () => {
-        const taskNum = header.dataset.task;
-        console.log('Clicked task:', taskNum, 'Tasks array:', tasks); // Debug log
+        const taskNum = parseInt(header.dataset.task) - 1; // Convert to 0-based index
+        console.log('Clicked task index:', taskNum, 'Tasks array:', tasks);
         showTaskDescription(taskNum);
       });
     });
   }
 
-  function showTaskDescription(taskNum) {
-    const task = tasks.find(t => t.name === `Task ${parseInt(taskNum)}`);
-    if (task) {
+  function showTaskDescription(taskIndex) {
+    if (taskIndex >= 0 && taskIndex < tasks.length) {
+      const task = tasks[taskIndex];
       console.log('Showing description for:', task.name, 'Description:', task.description); // Debug log
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       descriptionDiv.classList.remove('hidden');
       descriptionDiv.querySelector('.bg-white').scrollTop = 0; // Reset scroll
     } else {
-      console.error('Task not found for taskNum:', taskNum, 'Available tasks:', tasks);
+      console.error('Invalid task index:', taskIndex, 'Available tasks:', tasks);
     }
   }
 
