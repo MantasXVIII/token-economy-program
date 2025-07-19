@@ -2,39 +2,40 @@
 
 body {
   @apply bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4;
-  overflow-x: hidden; /* Prevent body-level scrolling */
+  overflow-x: hidden;
 }
 
 #app {
   @apply bg-white p-6 rounded shadow-md w-full;
-  max-width: 1280px; /* Reasonable desktop max width */
-  box-sizing: border-box; /* Include padding in width */
+  max-width: 1280px;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 #target-container {
-  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white p-6 rounded-lg mb-6 shadow-lg flex flex-col items-center justify-center w-full max-w-4xl text-center;
-  min-height: 200px;
+  @apply bg-blue-500 text-white p-4 rounded-lg mb-6 mx-auto flex items-center justify-center;
+  min-height: 150px;
+  max-width: 600px;
 }
 
 #target-image {
-  @apply h-48 w-auto mb-4 rounded block mx-auto;
+  @apply h-32 w-auto mb-2 mx-auto block;
 }
 
 #current-target {
-  @apply text-center;
+  @apply text-center flex-1;
 }
 
 #target-value {
-  @apply ml-0 font-semibold text-2xl block text-center;
+  @apply font-semibold text-xl block text-center;
 }
 
 #grid-container,
 #history-table-container {
-  @apply overflow-x-auto bg-white shadow-inner;
-  width: 100%;
-  max-width: 100%; /* Constrain to app width */
+  @apply overflow-x-auto bg-white shadow-inner w-full;
+  max-width: 100%;
   position: relative;
-  padding-bottom: 1px; /* Prevent collapse */
+  padding-bottom: 1px;
 }
 
 #grid-container::after,
@@ -47,55 +48,46 @@ body {
   height: 100%;
   background: white;
   z-index: -1;
-  min-width: 0; /* Default to dynamic width */
+  min-width: 0;
 }
 
 #weekly-progress {
   @apply mt-4 text-xl font-bold;
-  color: #2d3748; /* Dark gray for readability */
+  color: #2d3748;
 }
 
 table {
-  @apply border-collapse;
-  width: 100%;
-  min-width: 0; /* Allow natural sizing */
-  margin: 0 auto; /* Center the table */
-  table-layout: auto; /* Adjust columns based on content */
+  @apply border-collapse w-full;
+  min-width: 1200px;
+  margin: 0 auto;
+  table-layout: auto;
 }
 
 th, td {
-  @apply border p-2;
-  white-space: nowrap; /* Prevent text wrapping */
-  cursor: pointer; /* Indicate clickable tasks */
-  border: 2px solid #000; /* Black border */
+  @apply border p-2 text-center;
+  border: 2px solid #000;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 th {
-  @apply bg-gray-200 font-semibold text-center;
+  @apply bg-gray-200 font-semibold;
 }
 
-td {
-  @apply text-center;
-}
-
-/* Style for task cells */
 .task-cell {
-  @apply p-2 text-white flex items-center justify-center text-center;
+  @apply p-2 text-white text-center;
   transition: background-color 0.2s;
-  background-color: #a0aec0; /* Grey by default */
-  min-width: 100px; /* Ensure minimum width for readability */
-  height: 60px; /* Consistent height for centering */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #a0aec0;
+  min-width: 100px;
+  height: 60px;
 }
 
 .task-cell.completed {
-  background-color: #10b981; /* Green for completed */
+  background-color: #10b981;
 }
 
-.task-cell:not(.completed) {
-  background-color: #a0aec0; /* Explicit grey for uncompleted */
+#target-select {
+  @apply w-full max-w-xs p-2 mb-4 border rounded;
 }
 
 input[type="text"], input[type="password"], select {
@@ -127,32 +119,27 @@ button {
   @apply mt-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600;
 }
 
-/* Responsive adjustments for portrait/narrow screens */
+/* Responsive adjustments */
 @media (max-width: 768px) {
   #app {
     @apply max-w-full p-4;
   }
 
   #target-container {
-    @apply flex-col;
-    min-height: 150px;
+    min-height: 100px;
+    max-width: 100%;
   }
 
   #target-image {
-    @apply h-32;
+    @apply h-24;
   }
 
   #grid-container,
   #history-table-container {
-    @apply overflow-x-auto; /* Enable scrolling in portrait */
+    @apply overflow-x-auto;
   }
 
   table {
-    min-width: 1200px; /* Force width for 6 tasks */
-  }
-
-  #grid-container::after,
-  #history-table-container::after {
-    min-width: 1200px; /* Match table min-width */
+    min-width: 100%;
   }
 }

@@ -2,8 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let token = null;
   let role = null;
   let tasks = [];
-  let target = { target: 200, image: null }; // Default target
-  let overallTotal = 0;
+  let target = { name: "Helldivers II PS5 Game", points: 10, image: "https://image.api.playstation.com/vulcan/ap/rnd/202309/0718/ca77865b4bc8a1ea110fbe1492f7de8f80234dd079fc181a.png" }; // Default from target.json
 
   async function fetchTasks() {
     try {
@@ -11,6 +10,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!response.ok) throw new Error('Failed to fetch tasks');
       tasks = await response.json();
       console.log('Tasks loaded:', tasks);
+      if (!tasks.length || !tasks[0].points) {
+        console.error('Tasks data invalid or missing points:', tasks);
+      }
     } catch (error) {
       console.error('Error fetching tasks:', error);
     }
@@ -21,39 +23,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await fetch('/target');
       if (response.ok) {
         const data = await response.json();
-        target = { ...target, ...data }; // Merge with default
-        document.getElementById('target-value').textContent = target.target;
-        const targetImage = document.getElementById('target-image');
-        if (target.image) {
-          targetImage.src = target.image;
-          targetImage.classList.remove('hidden');
-        } else {
-          targetImage.classList.add('hidden');
-        }
-      } else {
-        console.warn('Failed to fetch target, using default:', target.target);
-        document.getElementById('target-value').textContent = target.target;
+        target = { name: data.name, points: data.points, image: data.image }; // Use single target
       }
+      updateTargetDisplay();
     } catch (error) {
       console.error('Error fetching target:', error);
-      document.getElementById('target-value').textContent = target.target;
+      updateTargetDisplay();
     }
   }
 
-  async function fetchHistoricalTargets() {
-    try {
-      const response = await fetch('/history/targets', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        return await response.json();
-      } else {
-        console.warn('No historical targets found');
-        return [];
-      }
-    } catch (error) {
-      console.error('Error fetching historical targets:', error);
-      return [];
+  function updateTargetDisplay() {
+    document.getElementById('target-value').textContent = target.name;
+    const targetImage = document.getElementById('target-image');
+    if (target.image) {
+      targetImage.src = target.image;
+      targetImage.classList.remove('hidden');
+    } else {
+      targetImage.classList.add('hidden');
     }
   }
 
@@ -62,13 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     let headerHTML = '<tr>';
     headerHTML += '<th class="border p-2">Day</th>';
     tasks.forEach((task, index) => {
-      const taskNum = index; // 0-based index
+      const taskNum = index;
       headerHTML += `<th class="border p-2 task-header" data-task="${taskNum}">${task.name}</th>`;
     });
     headerHTML += '</tr>';
     thead.innerHTML = headerHTML;
 
-    // Add click event listeners to task headers with logging
     document.querySelectorAll('.task-header').forEach(header => {
       header.addEventListener('click', () => {
         const taskIndex = parseInt(header.dataset.task);
@@ -84,9 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('Showing description for:', task.name, 'Description:', task.description);
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
-      const descriptionDiv = document.getElementById('task-description');
-      descriptionDiv.classList.remove('hidden');
-      descriptionDiv.querySelector('.bg-white').scrollTop = 0; // Reset scroll
+      document.getElementById('task-description').classList.remove('hidden');
+      document.querySelector('#task-description .bg-white').scrollTop = 0;
     } else {
       console.error('Invalid task index:', taskIndex, 'Available tasks:', tasks);
     }
@@ -97,50 +81,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   window.updateWeeklyTotal = function () {
-    let total = 0;
-    const maxTotal = tasks.reduce((sum, task) => sum + task.points, 0); // Max possible points
+    let weeklyTotal = 0;
     const cells = document.querySelectorAll('#grid-body .task-cell.completed');
     cells.forEach(cell => {
-      const taskNum = cell.cellIndex - 1; // Subtract 1 for Day column
-      if (taskNum >= 0 && taskNum < tasks.length) {
-        total += tasks[taskNum].points;
+      const taskNum = cell.cellIndex - 1;
+      if (taskNum >= 0 && taskNum < tasks.length && tasks[taskNum].points) {
+        weeklyTotal += tasks[taskNum].points;
+      } else {
+        console.warn('Invalid task or missing points at index:', taskNum, 'Cell:', cell);
       }
     });
-    const targetValue = target.target || 200; // Use fetched target or default
-    document.getElementById('weekly-progress').textContent = `Weekly Total: ${total} points | Total to Target: ${total} / ${targetValue} | Overall Total: ${overallTotal} points`;
-  };
 
-  async function updateOverallTotal() {
-    let total = 0;
-    try {
-      const historyResponse = await fetch('/history', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (historyResponse.ok) {
-        const history = await historyResponse.json();
-        for (const { week } of history) {
-          const weekData = await fetch(`/history/${week}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (weekData.ok) {
-            const grid = await weekData.json();
-            for (const day in grid) {
-              tasks.forEach((task, index) => {
-                const taskKey = `task${index + 1}`;
-                if (grid[day][taskKey]) {
-                  total += task.points;
-                }
-              });
+    // Calculate total points to target across all weeks
+    let totalToTarget = weeklyTotal;
+    fetch('/history', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(response => response.ok ? response.json() : [])
+      .then(history => {
+        const promises = history.map(({ week }) =>
+          fetch(`/history/${week}`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(res => res.ok ? res.json() : {})
+        );
+        Promise.all(promises).then(weeks => {
+          weeks.forEach(grid => {
+            if (grid && grid.target === target.points) { // Match target points
+              const weekTotal = Object.values(grid).reduce((sum, day) => {
+                return sum + Object.values(day).reduce((daySum, taskCompleted, index) => {
+                  if (taskCompleted && tasks[index]?.points) {
+                    daySum += tasks[index].points;
+                  }
+                  return daySum;
+                }, 0);
+              }, 0);
+              totalToTarget += weekTotal;
             }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error updating overall total:', error);
-    }
-    overallTotal = total; // Update global variable
-    updateWeeklyTotal(); // Reflect in UI
-  }
+          });
+          document.getElementById('weekly-progress').textContent = `Weekly Total: ${weeklyTotal} points | Total to Target: ${totalToTarget} / ${target.points}`;
+        });
+      })
+      .catch(error => console.error('Error fetching history:', error));
+  };
 
   async function login() {
     const username = document.getElementById('username').value;
@@ -152,19 +133,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const clonedResponse = response.clone();
-      const data = await clonedResponse.json();
+      const data = await response.json();
       console.log('Login response data:', data);
       if (response.ok && data.token) {
         token = data.token;
         role = data.role;
         document.getElementById('login').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        await Promise.all([fetchTasks(), fetchTarget(), fetchHistoricalTargets(), updateOverallTotal()]); // Fetch all data
+        await Promise.all([fetchTasks(), fetchTarget()]);
         generateTableHeader('grid-header');
         generateTableHeader('history-header');
         loadGrid();
-        updateWeeklyTotal(); // Initialize total
+        updateWeeklyTotal();
       } else {
         alert('Login failed: ' + (data.error || 'Unknown error'));
       }
@@ -180,21 +160,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to load grid');
-      const grid = await response.json();
+      let grid = await response.json();
+      // Ensure target is stored with grid if not present
+      if (typeof grid.target === 'undefined') {
+        grid.target = target.points;
+        await fetch('/grid', {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(grid),
+        });
+      }
       const tbody = document.getElementById('grid-body');
       tbody.innerHTML = '';
       for (const [day, taskStates] of Object.entries(grid)) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td class="border p-2">${day}</td>`;
-        tasks.forEach((task, index) => {
-          const taskKey = `task${index + 1}`;
-          const completed = taskStates[taskKey] ? 'completed' : '';
-          const disabled = role === 'viewer' ? 'pointer-events-none' : '';
-          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points}</td>`;
-        });
-        tbody.appendChild(row);
+        if (day !== 'target') {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td class="border p-2">${day}</td>`;
+          tasks.forEach((task, index) => {
+            const taskKey = `task${index + 1}`;
+            const completed = taskStates[taskKey] ? 'completed' : '';
+            const disabled = role === 'viewer' ? 'pointer-events-none' : '';
+            row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points || '0'}</td>`;
+          });
+          tbody.appendChild(row);
+        }
       }
-      // Add click handlers after rendering
       document.querySelectorAll('#grid-body .task-cell').forEach(cell => {
         cell.addEventListener('click', async () => {
           if (cell.classList.contains('pointer-events-none')) return;
@@ -206,11 +196,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (response.ok) {
             cell.classList.toggle('completed', currentValue);
             updateWeeklyTotal();
-            await updateOverallTotal(); // Update overall total after grid change
           }
         });
       });
-      updateWeeklyTotal(); // Update after loading
+      updateWeeklyTotal();
     } catch (error) {
       console.error('Error loading grid:', error);
     }
@@ -263,21 +252,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error('Failed to load history data');
-      const grid = await response.json();
+      let grid = await response.json();
+      // Ensure target is stored with grid if not present
+      if (typeof grid.target === 'undefined') {
+        grid.target = target.points;
+        await fetch(`/history/${week}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(grid),
+        });
+      }
       const tbody = document.getElementById('history-body');
       tbody.innerHTML = '';
       for (const [day, taskStates] of Object.entries(grid)) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td class="border p-2">${day}</td>`;
-        tasks.forEach((task, index) => {
-          const taskKey = `task${index + 1}`;
-          const completed = taskStates[taskKey] ? 'completed' : '';
-          const disabled = role === 'viewer' ? 'pointer-events-none' : '';
-          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points}</td>`;
-        });
-        tbody.appendChild(row);
+        if (day !== 'target') {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td class="border p-2">${day}</td>`;
+          tasks.forEach((task, index) => {
+            const taskKey = `task${index + 1}`;
+            const completed = taskStates[taskKey] ? 'completed' : '';
+            const disabled = role === 'viewer' ? 'pointer-events-none' : '';
+            row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points || '0'}</td>`;
+          });
+          tbody.appendChild(row);
+        }
       }
-      // Add click handlers after rendering
       document.querySelectorAll('#history-body .task-cell').forEach(cell => {
         cell.addEventListener('click', async () => {
           if (cell.classList.contains('pointer-events-none')) return;
@@ -288,73 +287,20 @@ document.addEventListener('DOMContentLoaded', async () => {
           const response = await updateTask('history', day, task, currentValue);
           if (response.ok) {
             cell.classList.toggle('completed', currentValue);
-            await updateOverallTotal(); // Update overall total after history change
+            updateWeeklyTotal(); // Update total after history edit
           }
         });
       });
-      await updateOverallTotal(); // Update overall total after loading history
-      // Ensure container adjusts after loading
       const container = document.getElementById('history-table-container');
       const table = container.querySelector('table');
       if (table) {
-        container.style.minWidth = `${table.scrollWidth}px`; // Match table width
+        container.style.minWidth = `${table.scrollWidth}px`;
       }
     } catch (error) {
       console.error('Error loading history data:', error);
     }
   }
 
-  async function saveHistory() {
-    try {
-      const response = await fetch('/save-history', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      });
-      const data = await response.json();
-      if (data.success) {
-        alert(`History saved for week ${data.week}`);
-        viewHistory(); // Refresh history dropdown
-        await updateOverallTotal(); // Update overall total after saving
-      } else {
-        alert('Failed to save history: ' + data.error);
-      }
-    } catch (error) {
-      console.error('Error saving history:', error);
-      alert('Failed to save history due to an error');
-    }
-  }
-
-  document.getElementById('target-reached-btn').addEventListener('click', async () => {
-    overallTotal = 0;
-    updateWeeklyTotal(); // Reset overall total in UI
-    // Attempt to reset grid on server
-    try {
-      const response = await fetch('/grid/reset', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      });
-      if (response.ok) {
-        await loadGrid(); // Reload grid to reflect reset
-        // Record achieved target
-        const now = new Date().toISOString().split('T')[0];
-        const targetData = { target: target.target, achieved: true, date: now };
-        await fetch('/history/targets', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(targetData),
-        });
-        await fetchHistoricalTargets(); // Refresh historical targets
-      }
-    } catch (error) {
-      console.error('Error resetting grid:', error);
-    }
-    alert('Target reached! Progress has been reset.');
-  });
-
-  // Bind the existing button
-  document.getElementById('save-history-btn').onclick = saveHistory;
-
-  // Expose functions to global scope
   window.login = login;
   window.updateTask = updateTask;
   window.viewHistory = viewHistory;

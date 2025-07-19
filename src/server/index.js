@@ -77,14 +77,38 @@ export default {
       const target = await env.GRID_KV.get('target.json', { type: 'json' });
       if (!target) {
         console.log('Target not found in KV');
-        return new Response(JSON.stringify({ target: 200, image: null }), {
+        return new Response(JSON.stringify({ name: "Helldivers II PS5 Game", points: 10, image: 'https://image.api.playstation.com/vulcan/ap/rnd/202309/0718/ca77865b4bc8a1ea110fbe1492f7de8f80234dd079fc181a.png' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify(target), {
+      return new Response(JSON.stringify([target]), { // Wrap in array for consistency with fetch
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    if (url.pathname === '/target' && request.method === 'PUT') {
+      const user = await authenticate();
+      if (user instanceof Response) return user;
+      if (user.role !== 'editor') {
+        return new Response(JSON.stringify({ error: 'Only editors can update target' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      try {
+        const newTarget = await request.json();
+        await env.GRID_KV.put('target.json', JSON.stringify(newTarget[0])); // Store as single object
+        return new Response(JSON.stringify({ success: true, target: newTarget[0] }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (e) {
+        console.error('Update target error:', e);
+        return new Response(JSON.stringify({ error: 'Failed to update target' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     if (url.pathname === '/login' && request.method === 'POST') {
@@ -129,7 +153,7 @@ export default {
       }
       try {
         const currentGrid = await env.GRID_KV.get('grid/current', { type: 'json' }) || JSON.parse(JSON.stringify(DEFAULT_GRID));
-        const date = new Date().toISOString().split('T')[0]; // Current date as YYYY-MM-DD
+        const date = new Date().toISOString().split('T')[0];
         const weekKey = `history/${date}`;
         await env.GRID_KV.put(weekKey, JSON.stringify(currentGrid));
         return new Response(JSON.stringify({ success: true, week: date }), {
@@ -153,10 +177,13 @@ export default {
         if (!grid) {
           const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
           grid = JSON.parse(JSON.stringify(DEFAULT_GRID));
+          grid.target = target.points; // Store target points
           Object.keys(grid).forEach(day => {
-            tasks.forEach((_, index) => {
-              grid[day][`task${index + 1}`] = false;
-            });
+            if (day !== 'target') {
+              tasks.forEach((_, index) => {
+                grid[day][`task${index + 1}`] = false;
+              });
+            }
           });
           await env.GRID_KV.put('grid/current', JSON.stringify(grid));
         }
@@ -193,10 +220,13 @@ export default {
       try {
         const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
         const newGrid = JSON.parse(JSON.stringify(DEFAULT_GRID));
+        newGrid.target = target.points; // Reset with current target
         Object.keys(newGrid).forEach(day => {
-          tasks.forEach((_, index) => {
-            newGrid[day][`task${index + 1}`] = false;
-          });
+          if (day !== 'target') {
+            tasks.forEach((_, index) => {
+              newGrid[day][`task${index + 1}`] = false;
+            });
+          }
         });
         await env.GRID_KV.put('grid/current', JSON.stringify(newGrid));
         return new Response(JSON.stringify({ success: true }), {
@@ -250,42 +280,6 @@ export default {
           });
         }
       }
-
-      if (url.pathname === '/history/targets' && request.method === 'GET') {
-        const keys = await env.GRID_KV.list({ prefix: 'target/' });
-        const targets = keys.keys.map(async key => {
-          const data = await env.GRID_KV.get(key.name, { type: 'json' });
-          return data;
-        });
-        return new Response(JSON.stringify(await Promise.all(targets)), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      if (url.pathname === '/history/targets' && request.method === 'POST') {
-        const user = await authenticate();
-        if (user instanceof Response) return user;
-        if (user.role !== 'editor') {
-          return new Response(JSON.stringify({ error: 'Only editors can add targets' }), {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
-        try {
-          const { target, achieved, date } = await request.json();
-          const targetKey = `target/${date}`;
-          await env.GRID_KV.put(targetKey, JSON.stringify({ target, achieved, date }));
-          return new Response(JSON.stringify({ success: true }), {
-            headers: { 'Content-Type': 'application/json' },
-          });
-        } catch (e) {
-          console.error('Add target error:', e);
-          return new Response(JSON.stringify({ error: 'Failed to add target' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }
-      }
     }
 
     return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
@@ -300,10 +294,13 @@ export default {
       await env.GRID_KV.put(weekKey, JSON.stringify(currentGrid));
       const tasks = await env.GRID_KV.get('tasks.json', { type: 'json' });
       const newGrid = JSON.parse(JSON.stringify(DEFAULT_GRID));
+      newGrid.target = currentGrid.target || 10; // Use current target or default
       Object.keys(newGrid).forEach(day => {
-        tasks.forEach((_, index) => {
-          newGrid[day][`task${index + 1}`] = false;
-        });
+        if (day !== 'target') {
+          tasks.forEach((_, index) => {
+            newGrid[day][`task${index + 1}`] = false;
+          });
+        }
       });
       await env.GRID_KV.put('grid/current', JSON.stringify(newGrid));
     }

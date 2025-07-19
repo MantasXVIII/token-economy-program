@@ -1,4 +1,7 @@
-{
-  "target": 200,
-  "image": "https://image.api.playstation.com/vulcan/ap/rnd/202309/0718/ca77865b4bc8a1ea110fbe1492f7de8f80234dd079fc181a.png"
-}
+[
+  {
+    "name": "Helldivers II PS5 Game",
+    "points": 10,
+    "image": "https://image.api.playstation.com/vulcan/ap/rnd/202309/0718/ca77865b4bc8a1ea110fbe1492f7de8f80234dd079fc181a.png"
+  }
+]
