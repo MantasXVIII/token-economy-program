@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const taskKey = `task${index + 1}`;
           const completed = taskStates[taskKey] ? 'completed' : '';
           const disabled = role === 'viewer' ? 'pointer-events-none' : '';
-          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('grid', '${day}', '${taskKey}', !${taskStates[taskKey]}); updateWeeklyTotal();">${task.points}</td>`;
+          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('grid', '${day}', '${taskKey}', !${taskStates[taskKey]}); this.classList.toggle('completed'); updateWeeklyTotal(); console.log('Toggled cell at day ${day}, task ${taskKey} to ${!taskStates[taskKey]}');">${task.points}</td>`;
         });
         tbody.appendChild(row);
       }
@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function updateTask(endpoint, day, task, value) {
     try {
+      console.log(`Updating ${endpoint} at ${day}, ${task} to ${value}`);
       await fetch(`/${endpoint}${endpoint === 'history' ? '/' + document.getElementById('history-select').value : ''}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -221,7 +222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const taskKey = `task${index + 1}`;
           const completed = taskStates[taskKey] ? 'completed' : '';
           const disabled = role === 'viewer' ? 'pointer-events-none' : '';
-          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('history', '${day}', '${taskKey}', !${taskStates[taskKey]})">${task.points}</td>`;
+          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('history', '${day}', '${taskKey}', !${taskStates[taskKey]}); this.classList.toggle('completed');">${task.points}</td>`;
         });
         tbody.appendChild(row);
       }

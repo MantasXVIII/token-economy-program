@@ -81,11 +81,11 @@ td {
 }
 
 .task-cell.completed {
-  @apply bg-green-500;
+  background-color: #10b981; /* Green for completed */
 }
 
 .task-cell:not(.completed) {
-  @apply bg-gray-300;
+  background-color: #a0aec0; /* Explicit grey for uncompleted */
 }
 
 input[type="text"], input[type="password"], select {
