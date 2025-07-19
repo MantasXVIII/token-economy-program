@@ -1,7 +1,7 @@
 [
   {
     "name": "Morning routine",
-    "description": "You have to make your bed neatly. The blanket has to be straight without any wrinkles.\n Then, you do exercise with Mantas. Exercise means 4 sets with 1 minute break between sets of an exercise Mantas decides. For eaxmple a set of squats is 20 squats and then a 1 minute break.",
+    "description": "You have to make your bed neatly. The blanket has to be straight without any wrinkles. Then, you do exercise with Mantas. Exercise means 4 sets with 1 minute break between sets of an exercise Mantas decides. For eaxmple a set of squats is 20 squats and then a 1 minute break.",
     "points": 10
   },
   {
@@ -16,12 +16,12 @@
   },
   {
     "name": "Studying",
-    "description": "You will be given a worksheet on some topic. You have to fill it out neatly. You must finish the worksheet. You cannot ask \"Is this right?\" or \"Is this the correct answer?\"\n When you finish the worksheet, Mantas will mark your worksheet, ticking correct answers. If you got any questions wrong, he will help you get the right answer.",
+    "description": "You will be given a worksheet on some topic. You have to fill it out neatly. You must finish the worksheet. You cannot ask 'Is this right?' or 'Is this the correct answer?' When you finish the worksheet, Mantas will mark your worksheet, ticking correct answers. If you got any questions wrong, he will help you get the right answer.",
     "points": 10
   },
   {
     "name": "Discuss your day",
-    "description": "You must discuss how your day was politely. You cannot say \"I don't know\" or \"I don't want to talk about it\" or anything similar to this. You must say what you did, how you felt and what you liked or disliked about your day.\n It is polite to ask the other person how their day was. This will be with Edita when she is available, or Mantas if she isn't.",
+    "description": "You must discuss how your day was politely. You cannot say 'I don't know' or 'I don't want to talk about it' or anything similar to this. You must say what you did, how you felt and what you liked or disliked about your day. It is polite to ask the other person how their day was. This will be with Edita when she is available, or Mantas if she isn't.",
     "points": 10
   },
   {
