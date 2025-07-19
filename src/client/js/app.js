@@ -3,11 +3,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   let role = null;
   let tasks = [];
 
+  // Define updateWeeklyTotal globally
+  window.updateWeeklyTotal = function () {
+    let total = 0;
+    const checkboxes = document.querySelectorAll('#grid-body input[type="checkbox"]:checked');
+    checkboxes.forEach(checkbox => {
+      const taskNum = checkbox.closest('td').cellIndex; // Get column index (1-based for tasks)
+      if (taskNum > 0 && taskNum <= tasks.length) {
+        total += tasks[taskNum - 1].points; // Subtract 1 for 0-based array
+      }
+    });
+    document.getElementById('weekly-total').textContent = `Weekly Total: ${total} points`;
+  };
+
   async function fetchTasks() {
     try {
       const response = await fetch('/tasks');
       if (!response.ok) throw new Error('Failed to fetch tasks');
       tasks = await response.json();
+      console.log('Tasks loaded:', tasks); // Debug log
     } catch (error) {
       console.error('Error fetching tasks:', error);
     }
@@ -35,25 +49,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (task) {
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
-      document.getElementById('task-description').classList.remove('hidden');
+      const descriptionDiv = document.getElementById('task-description');
+      descriptionDiv.classList.remove('hidden');
+      // Ensure content fits
+      descriptionDiv.querySelector('.bg-white').scrollTop = 0; // Reset scroll
+    } else {
+      console.error('Task not found:', taskNum);
     }
   }
 
   document.getElementById('close-description').addEventListener('click', () => {
     document.getElementById('task-description').classList.add('hidden');
   });
-
-  function updateWeeklyTotal() {
-    let total = 0;
-    const checkboxes = document.querySelectorAll('#grid-body input[type="checkbox"]:checked');
-    checkboxes.forEach(checkbox => {
-      const taskNum = checkbox.closest('td').cellIndex; // Get column index (1-based for tasks)
-      if (taskNum > 0 && taskNum <= tasks.length) {
-        total += tasks[taskNum - 1].points; // Subtract 1 for 0-based array
-      }
-    });
-    document.getElementById('weekly-total').textContent = `Weekly Total: ${total} points`;
-  }
 
   async function login() {
     const username = document.getElementById('username').value;
