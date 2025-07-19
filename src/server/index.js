@@ -73,6 +73,20 @@ export default {
       });
     }
 
+    if (url.pathname === '/target' && request.method === 'GET') {
+      const target = await env.GRID_KV.get('target.json', { type: 'json' });
+      if (!target) {
+        console.log('Target not found in KV');
+        return new Response(JSON.stringify({ target: 200, image: null }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify(target), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     if (url.pathname === '/login' && request.method === 'POST') {
       console.log('Handling login request');
       try {
@@ -157,10 +171,11 @@ export default {
         if (grid[day] && grid[day][task] !== undefined) {
           grid[day][task] = value;
           await env.GRID_KV.put('grid/current', JSON.stringify(grid));
+          return new Response(JSON.stringify({ day, task, value }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
         }
-        return new Response(JSON.stringify(grid), {
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return new Response(JSON.stringify({ error: 'Invalid day or task' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
       }
 
       return new Response(JSON.stringify({ error: 'Method not allowed or insufficient permissions' }), { status: 403, headers: { 'Content-Type': 'application/json' } });

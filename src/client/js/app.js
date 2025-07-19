@@ -155,10 +155,25 @@ document.addEventListener('DOMContentLoaded', async () => {
           const taskKey = `task${index + 1}`;
           const completed = taskStates[taskKey] ? 'completed' : '';
           const disabled = role === 'viewer' ? 'pointer-events-none' : '';
-          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('grid', '${day}', '${taskKey}', !${taskStates[taskKey]}); this.classList.toggle('completed'); updateWeeklyTotal(); console.log('Toggled cell at day ${day}, task ${taskKey} to ${!taskStates[taskKey]}');">${task.points}</td>`;
+          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points}</td>`;
         });
         tbody.appendChild(row);
       }
+      // Add click handlers after rendering
+      document.querySelectorAll('#grid-body .task-cell').forEach(cell => {
+        cell.addEventListener('click', async () => {
+          if (cell.classList.contains('pointer-events-none')) return;
+          const day = cell.dataset.day;
+          const task = cell.dataset.task;
+          const currentValue = !cell.classList.contains('completed');
+          console.log(`Toggling ${day}, ${task} to ${currentValue}`);
+          const response = await updateTask('grid', day, task, currentValue);
+          if (response.ok) {
+            cell.classList.toggle('completed', currentValue);
+            updateWeeklyTotal();
+          }
+        });
+      });
       updateWeeklyTotal(); // Update after loading
     } catch (error) {
       console.error('Error loading grid:', error);
@@ -168,15 +183,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function updateTask(endpoint, day, task, value) {
     try {
       console.log(`Updating ${endpoint} at ${day}, ${task} to ${value}`);
-      await fetch(`/${endpoint}${endpoint === 'history' ? '/' + document.getElementById('history-select').value : ''}`, {
+      const response = await fetch(`/${endpoint}${endpoint === 'history' ? '/' + document.getElementById('history-select').value : ''}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ day, task, value }),
       });
-      if (endpoint === 'grid') loadGrid();
-      else loadHistory();
+      return response;
     } catch (error) {
       console.error('Error updating task:', error);
+      return new Response(null, { status: 500 });
     }
   }
 
@@ -222,10 +237,24 @@ document.addEventListener('DOMContentLoaded', async () => {
           const taskKey = `task${index + 1}`;
           const completed = taskStates[taskKey] ? 'completed' : '';
           const disabled = role === 'viewer' ? 'pointer-events-none' : '';
-          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('history', '${day}', '${taskKey}', !${taskStates[taskKey]}); this.classList.toggle('completed');">${task.points}</td>`;
+          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points}</td>`;
         });
         tbody.appendChild(row);
       }
+      // Add click handlers after rendering
+      document.querySelectorAll('#history-body .task-cell').forEach(cell => {
+        cell.addEventListener('click', async () => {
+          if (cell.classList.contains('pointer-events-none')) return;
+          const day = cell.dataset.day;
+          const task = cell.dataset.task;
+          const currentValue = !cell.classList.contains('completed');
+          console.log(`Toggling ${day}, ${task} to ${currentValue}`);
+          const response = await updateTask('history', day, task, currentValue);
+          if (response.ok) {
+            cell.classList.toggle('completed', currentValue);
+          }
+        });
+      });
       updateOverallTotal(); // Update overall total after loading history
       // Ensure container adjusts after loading
       const container = document.getElementById('history-table-container');
