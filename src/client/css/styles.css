@@ -12,12 +12,12 @@ body {
 }
 
 #target-container {
-  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white p-6 rounded-lg mb-6 shadow-lg flex flex-col items-center justify-center w-full max-w-4xl;
+  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white p-6 rounded-lg mb-6 shadow-lg flex flex-col items-center justify-center w-full max-w-4xl text-center;
   min-height: 200px;
 }
 
 #target-image {
-  @apply h-48 w-auto mb-4 rounded;
+  @apply h-48 w-auto mb-4 rounded block mx-auto;
 }
 
 #current-target {
@@ -25,7 +25,7 @@ body {
 }
 
 #target-value {
-  @apply ml-0 font-semibold text-2xl;
+  @apply ml-0 font-semibold text-2xl block text-center;
 }
 
 #grid-container,
@@ -71,7 +71,7 @@ th, td {
 }
 
 th {
-  @apply bg-gray-200 font-semibold;
+  @apply bg-gray-200 font-semibold text-center;
 }
 
 td {
@@ -80,11 +80,14 @@ td {
 
 /* Style for task cells */
 .task-cell {
-  @apply p-2 text-white flex items-center justify-center;
+  @apply p-2 text-white flex items-center justify-center text-center;
   transition: background-color 0.2s;
   background-color: #a0aec0; /* Grey by default */
   min-width: 100px; /* Ensure minimum width for readability */
   height: 60px; /* Consistent height for centering */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .task-cell.completed {
