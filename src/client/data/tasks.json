@@ -1,42 +1,32 @@
 [
   {
-    "name": "Task 1",
-    "description": "This is a description",
+    "name": "Morning routine",
+    "description": "You have to make your bed neatly. The blanket has to be straight without any wrinkles.\n Then, you do exercise with Mantas. Exercise means 4 sets with 1 minute break between sets of an exercise Mantas decides. For eaxmple a set of squats is 20 squats and then a 1 minute break.",
     "points": 10
   },
   {
-    "name": "Task 2",
-    "description": "This is a description",
+    "name": "Breakfast",
+    "description": "You have to make your breakfast, or make breakfast with the help of an adult. Breakfast is a small meal of 3 eggs with any side you want like tomatos. Once you make breakfast, you have to eat all of your breakfast and tidy up the table after yourself.",
     "points": 10
   },
   {
-    "name": "Task 3",
-    "description": "This is a description",
+    "name": "Read a chapter of a book",
+    "description": "You have to read a chapter of a book. You must focus and pay attention to the story. After you read the chapter, you will have to write a chapter report on it. A chapter report is when you mention all the characters involved, what they did in the beginning, the middle and the end.",
     "points": 10
   },
   {
-    "name": "Task 4",
-    "description": "This is a description",
+    "name": "Studying",
+    "description": "You will be given a worksheet on some topic. You have to fill it out neatly. You must finish the worksheet. You cannot ask \"Is this right?\" or \"Is this the correct answer?\"\n When you finish the worksheet, Mantas will mark your worksheet, ticking correct answers. If you got any questions wrong, he will help you get the right answer.",
     "points": 10
   },
   {
-    "name": "Task 5",
-    "description": "This is a description",
+    "name": "Discuss your day",
+    "description": "You must discuss how your day was politely. You cannot say \"I don't know\" or \"I don't want to talk about it\" or anything similar to this. You must say what you did, how you felt and what you liked or disliked about your day.\n It is polite to ask the other person how their day was. This will be with Edita when she is available, or Mantas if she isn't.",
     "points": 10
   },
   {
-    "name": "Task 6",
-    "description": "This is a description",
-    "points": 10
-  },
-  {
-    "name": "Task 7",
-    "description": "This is a description",
-    "points": 10
-  },
-  {
-    "name": "Task 8",
-    "description": "This is a description",
+    "name": "Sleep alone",
+    "description": "You must sleep alone. You must not wake anyone up UNLESS it is an EMERGENCY. An emergency is if you are sick, or if there is something happening in the house. If there is an emergency, you must not wake anyone up. If you go to the bathroom, you must try your best to do it quitely without going into anyone else's room.",
     "points": 10
   }
 ]
