@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let role = null;
   let tasks = [];
   let target = { target: 200, image: null }; // Default target
+  let overallTotal = 0;
 
   async function fetchTasks() {
     try {
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const taskNum = index; // 0-based index
       headerHTML += `<th class="border p-2 task-header" data-task="${taskNum}">${task.name}</th>`;
     });
+    headerHTML += '<th class="border p-2">Weekly Total</th>'; // Add total column
     headerHTML += '</tr>';
     thead.innerHTML = headerHTML;
 
@@ -89,8 +91,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
     const targetValue = target.target || 200; // Use fetched target or default
-    document.getElementById('weekly-progress').textContent = `Weekly Total: ${total} points | Total to Target: ${total} / ${targetValue}`;
+    document.getElementById('weekly-progress').textContent = `Weekly Total: ${total} points | Total to Target: ${total} / ${targetValue} | Overall Total: ${overallTotal} points`;
   };
+
+  function calculateWeeklyTotalForHistory(grid) {
+    let total = 0;
+    for (const day in grid) {
+      tasks.forEach((task, index) => {
+        const taskKey = `task${index + 1}`;
+        if (grid[day][taskKey]) {
+          total += task.points;
+        }
+      });
+    }
+    return total;
+  }
 
   async function login() {
     const username = document.getElementById('username').value;
@@ -115,6 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         generateTableHeader('history-header');
         loadGrid();
         updateWeeklyTotal(); // Initialize total
+        updateOverallTotal(); // Initialize overall total
       } else {
         alert('Login failed: ' + (data.error || 'Unknown error'));
       }
@@ -142,6 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const disabled = role === 'viewer' ? 'disabled' : '';
           row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('grid', '${day}', '${taskKey}', this.checked); updateWeeklyTotal();"></td>`;
         });
+        row.innerHTML += `<td class="border p-2">${calculateWeeklyTotalForHistory({ [day]: taskStates })} points</td>`; // Add weekly total
         tbody.appendChild(row);
       }
       updateWeeklyTotal(); // Update after loading
@@ -208,8 +225,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           const disabled = role === 'viewer' ? 'disabled' : '';
           row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('history', '${day}', '${taskKey}', this.checked)"></td>`;
         });
+        row.innerHTML += `<td class="border p-2">${calculateWeeklyTotalForHistory({ [day]: taskStates })} points</td>`; // Add weekly total
         tbody.appendChild(row);
       }
+      updateOverallTotal(); // Update overall total after loading history
       // Ensure container adjusts after loading
       const container = document.getElementById('history-table-container');
       const table = container.querySelector('table');
@@ -219,6 +238,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
       console.error('Error loading history data:', error);
     }
+  }
+
+  function updateOverallTotal() {
+    let total = 0;
+    const historyItems = document.querySelectorAll('#history-body tr td:last-child');
+    historyItems.forEach(item => {
+      const points = parseInt(item.textContent) || 0;
+      total += points;
+    });
+    overallTotal = total; // Update global variable
+    updateWeeklyTotal(); // Reflect in UI
   }
 
   async function saveHistory() {
@@ -239,6 +269,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert('Failed to save history due to an error');
     }
   }
+
+  document.getElementById('target-reached-btn').addEventListener('click', () => {
+    overallTotal = 0;
+    updateWeeklyTotal(); // Reset overall total
+    alert('Target reached! Progress has been reset.');
+  });
 
   // Bind the existing button
   document.getElementById('save-history-btn').onclick = saveHistory;

@@ -76,8 +76,29 @@ td {
   @apply text-center;
 }
 
+/* Larger custom checkboxes */
 input[type="checkbox"] {
-  @apply h-5 w-5;
+  @apply h-8 w-8; /* Increased size */
+  appearance: none; /* Remove default styling */
+  border: 2px solid #4b5563; /* Gray border */
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #10b981; /* Green when checked */
+  border-color: #10b981;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '✓'; /* Checkmark */
+  color: white;
+  font-size: 1.25rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 input[type="text"], input[type="password"], select {
