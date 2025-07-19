@@ -82,7 +82,7 @@ export default {
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify([target]), { // Wrap in array for consistency with fetch
+      return new Response(JSON.stringify([target]), { // Wrap in array for consistency
         headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -195,14 +195,17 @@ export default {
       if (request.method === 'PUT' && user.role === 'editor') {
         const { day, task, value } = await request.json();
         let grid = await env.GRID_KV.get('grid/current', { type: 'json' }) || JSON.parse(JSON.stringify(DEFAULT_GRID));
-        if (grid[day] && grid[day][task] !== undefined) {
+        if (day === 'target' && task === 'target') {
+          grid.target = value;
+        } else if (grid[day] && grid[day][task] !== undefined) {
           grid[day][task] = value;
-          await env.GRID_KV.put('grid/current', JSON.stringify(grid));
-          return new Response(JSON.stringify({ day, task, value }), {
-            headers: { 'Content-Type': 'application/json' },
-          });
+        } else {
+          return new Response(JSON.stringify({ error: 'Invalid day or task' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
-        return new Response(JSON.stringify({ error: 'Invalid day or task' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+        await env.GRID_KV.put('grid/current', JSON.stringify(grid));
+        return new Response(JSON.stringify({ day, task, value }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
 
       return new Response(JSON.stringify({ error: 'Method not allowed or insufficient permissions' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
@@ -271,10 +274,14 @@ export default {
           if (!grid) {
             return new Response(JSON.stringify({ error: 'History not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
           }
-          if (grid[day] && grid[day][task] !== undefined) {
+          if (day === 'target' && task === 'target') {
+            grid.target = value;
+          } else if (grid[day] && grid[day][task] !== undefined) {
             grid[day][task] = value;
-            await env.GRID_KV.put(`history/${week}`, JSON.stringify(grid));
+          } else {
+            return new Response(JSON.stringify({ error: 'Invalid day or task' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
           }
+          await env.GRID_KV.put(`history/${week}`, JSON.stringify(grid));
           return new Response(JSON.stringify(grid), {
             headers: { 'Content-Type': 'application/json' },
           });

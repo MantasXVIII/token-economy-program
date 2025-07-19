@@ -23,7 +23,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await fetch('/target');
       if (response.ok) {
         const data = await response.json();
-        target = { name: data.name, points: data.points, image: data.image }; // Use single target
+        // Handle the single target object wrapped in an array
+        target = Array.isArray(data) ? data[0] : data;
+        console.log('Fetched target:', target); // Debug log
+      } else {
+        console.warn('Fetch target failed, using default:', target);
       }
       updateTargetDisplay();
     } catch (error) {
@@ -33,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateTargetDisplay() {
-    document.getElementById('target-value').textContent = target.name;
+    document.getElementById('target-value').textContent = target.name || 'No Target';
     const targetImage = document.getElementById('target-image');
     if (target.image) {
       targetImage.src = target.image;
@@ -117,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               totalToTarget += weekTotal;
             }
           });
-          document.getElementById('weekly-progress').textContent = `Weekly Total: ${weeklyTotal} points | Total to Target: ${totalToTarget} / ${target.points}`;
+          document.getElementById('weekly-progress').textContent = `Weekly Total: ${weeklyTotal} points | Total to Target: ${totalToTarget} / ${target.points || 10}`;
         });
       })
       .catch(error => console.error('Error fetching history:', error));
@@ -159,32 +163,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await fetch('/grid', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to load grid');
+      if (!response.ok) throw new Error('Failed to load grid: ' + response.statusText);
       let grid = await response.json();
+      console.log('Grid data:', grid); // Debug log
       // Ensure target is stored with grid if not present
       if (typeof grid.target === 'undefined') {
-        grid.target = target.points;
-        await fetch('/grid', {
+        const updateResponse = await fetch('/grid', {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(grid),
+          body: JSON.stringify({ day: 'target', task: 'target', value: target.points }),
         });
+        if (!updateResponse.ok) throw new Error('Failed to update grid target: ' + updateResponse.statusText);
+        grid = await updateResponse.json(); // Refresh grid data
       }
       const tbody = document.getElementById('grid-body');
       tbody.innerHTML = '';
-      for (const [day, taskStates] of Object.entries(grid)) {
-        if (day !== 'target') {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      days.forEach(day => {
+        if (grid[day]) {
           const row = document.createElement('tr');
           row.innerHTML = `<td class="border p-2">${day}</td>`;
           tasks.forEach((task, index) => {
             const taskKey = `task${index + 1}`;
-            const completed = taskStates[taskKey] ? 'completed' : '';
+            const completed = grid[day][taskKey] ? 'completed' : '';
             const disabled = role === 'viewer' ? 'pointer-events-none' : '';
             row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points || '0'}</td>`;
           });
           tbody.appendChild(row);
         }
-      }
+      });
       document.querySelectorAll('#grid-body .task-cell').forEach(cell => {
         cell.addEventListener('click', async () => {
           if (cell.classList.contains('pointer-events-none')) return;
@@ -213,6 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ day, task, value }),
       });
+      if (!response.ok) throw new Error('Failed to update task: ' + response.statusText);
       return response;
     } catch (error) {
       console.error('Error updating task:', error);
@@ -253,30 +261,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (!response.ok) throw new Error('Failed to load history data');
       let grid = await response.json();
+      console.log('History grid data:', grid); // Debug log
       // Ensure target is stored with grid if not present
       if (typeof grid.target === 'undefined') {
-        grid.target = target.points;
-        await fetch(`/history/${week}`, {
+        const updateResponse = await fetch(`/history/${week}`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(grid),
+          body: JSON.stringify({ day: 'target', task: 'target', value: target.points }),
         });
+        if (!updateResponse.ok) throw new Error('Failed to update history target: ' + updateResponse.statusText);
+        grid = await updateResponse.json(); // Refresh grid data
       }
       const tbody = document.getElementById('history-body');
       tbody.innerHTML = '';
-      for (const [day, taskStates] of Object.entries(grid)) {
-        if (day !== 'target') {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      days.forEach(day => {
+        if (grid[day]) {
           const row = document.createElement('tr');
           row.innerHTML = `<td class="border p-2">${day}</td>`;
           tasks.forEach((task, index) => {
             const taskKey = `task${index + 1}`;
-            const completed = taskStates[taskKey] ? 'completed' : '';
+            const completed = grid[day][taskKey] ? 'completed' : '';
             const disabled = role === 'viewer' ? 'pointer-events-none' : '';
             row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}">${task.points || '0'}</td>`;
           });
           tbody.appendChild(row);
         }
-      }
+      });
       document.querySelectorAll('#history-body .task-cell').forEach(cell => {
         cell.addEventListener('click', async () => {
           if (cell.classList.contains('pointer-events-none')) return;
