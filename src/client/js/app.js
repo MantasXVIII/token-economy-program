@@ -48,7 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const taskNum = index; // 0-based index
       headerHTML += `<th class="border p-2 task-header" data-task="${taskNum}">${task.name}</th>`;
     });
-    headerHTML += '<th class="border p-2">Weekly Total</th>'; // Add total column
     headerHTML += '</tr>';
     thead.innerHTML = headerHTML;
 
@@ -62,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function showTaskDescription(taskIndex) {
+  function showTaskDescription(task Ascertain(taskIndex) {
     if (taskIndex >= 0 && taskIndex < tasks.length) {
       const task = tasks[taskIndex];
       console.log('Showing description for:', task.name, 'Description:', task.description);
@@ -83,11 +82,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.updateWeeklyTotal = function () {
     let total = 0;
     const maxTotal = tasks.reduce((sum, task) => sum + task.points, 0); // Max possible points
-    const checkboxes = document.querySelectorAll('#grid-body input[type="checkbox"]:checked');
-    checkboxes.forEach(checkbox => {
-      const taskNum = checkbox.closest('td').cellIndex; // Get column index (1-based for tasks)
-      if (taskNum > 0 && taskNum <= tasks.length) {
-        total += tasks[taskNum - 1].points; // Subtract 1 for 0-based array
+    const cells = document.querySelectorAll('#grid-body .task-cell.completed');
+    cells.forEach(cell => {
+      const taskNum = cell.cellIndex - 1; // Subtract 1 for Day column
+      if (taskNum >= 0 && taskNum < tasks.length) {
+        total += tasks[taskNum].points;
       }
     });
     const targetValue = target.target || 200; // Use fetched target or default
@@ -154,11 +153,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         row.innerHTML = `<td class="border p-2">${day}</td>`;
         tasks.forEach((task, index) => {
           const taskKey = `task${index + 1}`;
-          const checked = taskStates[taskKey] ? 'checked' : '';
-          const disabled = role === 'viewer' ? 'disabled' : '';
-          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('grid', '${day}', '${taskKey}', this.checked); updateWeeklyTotal();"></td>`;
+          const completed = taskStates[taskKey] ? 'completed' : '';
+          const disabled = role === 'viewer' ? 'pointer-events-none' : '';
+          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('grid', '${day}', '${taskKey}', !${taskStates[taskKey]}); updateWeeklyTotal();">${task.points}</td>`;
         });
-        row.innerHTML += `<td class="border p-2">${calculateWeeklyTotalForHistory({ [day]: taskStates })} points</td>`; // Add weekly total
         tbody.appendChild(row);
       }
       updateWeeklyTotal(); // Update after loading
@@ -221,11 +219,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         row.innerHTML = `<td class="border p-2">${day}</td>`;
         tasks.forEach((task, index) => {
           const taskKey = `task${index + 1}`;
-          const checked = taskStates[taskKey] ? 'checked' : '';
-          const disabled = role === 'viewer' ? 'disabled' : '';
-          row.innerHTML += `<td class="border p-2 text-center"><input type="checkbox" ${checked} ${disabled} onchange="updateTask('history', '${day}', '${taskKey}', this.checked)"></td>`;
+          const completed = taskStates[taskKey] ? 'completed' : '';
+          const disabled = role === 'viewer' ? 'pointer-events-none' : '';
+          row.innerHTML += `<td class="task-cell ${completed} ${disabled}" data-day="${day}" data-task="${taskKey}" onclick="updateTask('history', '${day}', '${taskKey}', !${taskStates[taskKey]})">${task.points}</td>`;
         });
-        row.innerHTML += `<td class="border p-2">${calculateWeeklyTotalForHistory({ [day]: taskStates })} points</td>`; // Add weekly total
         tbody.appendChild(row);
       }
       updateOverallTotal(); // Update overall total after loading history
@@ -242,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updateOverallTotal() {
     let total = 0;
-    const historyItems = document.querySelectorAll('#history-body tr td:last-child');
+    const historyItems = document.querySelectorAll('#history-body .task-cell.completed');
     historyItems.forEach(item => {
       const points = parseInt(item.textContent) || 0;
       total += points;

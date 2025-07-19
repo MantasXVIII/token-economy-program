@@ -64,10 +64,6 @@ th, td {
   cursor: pointer; /* Indicate clickable tasks */
 }
 
-th:hover, td:hover {
-  @apply bg-gray-300; /* Visual feedback for clickable tasks */
-}
-
 th {
   @apply bg-gray-200 font-semibold;
 }
@@ -76,29 +72,18 @@ td {
   @apply text-center;
 }
 
-/* Larger custom checkboxes */
-input[type="checkbox"] {
-  @apply h-8 w-8; /* Increased size */
-  appearance: none; /* Remove default styling */
-  border: 2px solid #4b5563; /* Gray border */
-  border-radius: 4px;
-  position: relative;
-  cursor: pointer;
+/* Style for task cells */
+.task-cell {
+  @apply p-2;
+  transition: background-color 0.2s;
 }
 
-input[type="checkbox"]:checked {
-  background-color: #10b981; /* Green when checked */
-  border-color: #10b981;
+.task-cell.completed {
+  @apply bg-green-500 text-white;
 }
 
-input[type="checkbox"]:checked::after {
-  content: '✓'; /* Checkmark */
-  color: white;
-  font-size: 1.25rem;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.task-cell:not(.completed) {
+  @apply bg-gray-300;
 }
 
 input[type="text"], input[type="password"], select {
