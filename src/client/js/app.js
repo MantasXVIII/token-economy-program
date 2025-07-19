@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let headerHTML = '<tr>';
     headerHTML += '<th class="border p-2">Day</th>';
     tasks.forEach((task, index) => {
-      const taskNum = index + 1;
+      const taskNum = index; // 0-based index
       headerHTML += `<th class="border p-2 task-header" data-task="${taskNum}">${task.name}</th>`;
     });
     headerHTML += '</tr>';
@@ -41,9 +41,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Add click event listeners to task headers with logging
     document.querySelectorAll('.task-header').forEach(header => {
       header.addEventListener('click', () => {
-        const taskNum = parseInt(header.dataset.task) - 1; // Convert to 0-based index
-        console.log('Clicked task index:', taskNum, 'Tasks array:', tasks);
-        showTaskDescription(taskNum);
+        const taskIndex = parseInt(header.dataset.task); // Use 0-based index
+        console.log('Clicked task index:', taskIndex, 'Tasks array:', tasks);
+        showTaskDescription(taskIndex);
       });
     });
   }
