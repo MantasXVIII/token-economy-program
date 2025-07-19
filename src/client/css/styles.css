@@ -11,6 +11,18 @@ body {
   box-sizing: border-box; /* Include padding in width */
 }
 
+#current-target {
+  @apply mb-4 text-lg font-semibold flex items-center;
+}
+
+#target-value {
+  @apply ml-2;
+}
+
+#target-image {
+  @apply ml-2 h-12 w-auto;
+}
+
 #grid-container,
 #history-table-container {
   @apply overflow-x-auto bg-white shadow-inner;
@@ -33,7 +45,7 @@ body {
   min-width: 0; /* Default to dynamic width */
 }
 
-#weekly-total {
+#weekly-progress {
   @apply mt-4 text-xl font-bold;
   color: #2d3748; /* Dark gray for readability */
 }
@@ -109,7 +121,7 @@ button {
   }
 
   table {
-    min-width: 1200px; /* Force width for 8 tasks */
+    min-width: 1200px; /* Force width for 6 tasks */
   }
 
   #grid-container::after,

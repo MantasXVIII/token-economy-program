@@ -2,28 +2,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   let token = null;
   let role = null;
   let tasks = [];
-
-  // Define updateWeeklyTotal globally
-  window.updateWeeklyTotal = function () {
-    let total = 0;
-    const checkboxes = document.querySelectorAll('#grid-body input[type="checkbox"]:checked');
-    checkboxes.forEach(checkbox => {
-      const taskNum = checkbox.closest('td').cellIndex; // Get column index (1-based for tasks)
-      if (taskNum > 0 && taskNum <= tasks.length) {
-        total += tasks[taskNum - 1].points; // Subtract 1 for 0-based array
-      }
-    });
-    document.getElementById('weekly-total').textContent = `Weekly Total: ${total} points`;
-  };
+  let target = { target: 200, image: null }; // Default target
 
   async function fetchTasks() {
     try {
       const response = await fetch('/tasks');
       if (!response.ok) throw new Error('Failed to fetch tasks');
       tasks = await response.json();
-      console.log('Tasks loaded:', tasks); // Debug log
+      console.log('Tasks loaded:', tasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
+    }
+  }
+
+  async function fetchTarget() {
+    try {
+      const response = await fetch('/target');
+      if (response.ok) {
+        const data = await response.json();
+        target = { ...target, ...data }; // Merge with default
+        document.getElementById('target-value').textContent = target.target;
+        const targetImage = document.getElementById('target-image');
+        if (target.image) {
+          targetImage.src = target.image;
+          targetImage.classList.remove('hidden');
+        } else {
+          targetImage.classList.add('hidden');
+        }
+      } else {
+        console.warn('Failed to fetch target, using default:', target.target);
+        document.getElementById('target-value').textContent = target.target;
+      }
+    } catch (error) {
+      console.error('Error fetching target:', error);
+      document.getElementById('target-value').textContent = target.target;
     }
   }
 
@@ -41,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Add click event listeners to task headers with logging
     document.querySelectorAll('.task-header').forEach(header => {
       header.addEventListener('click', () => {
-        const taskIndex = parseInt(header.dataset.task); // Use 0-based index
+        const taskIndex = parseInt(header.dataset.task);
         console.log('Clicked task index:', taskIndex, 'Tasks array:', tasks);
         showTaskDescription(taskIndex);
       });
@@ -51,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function showTaskDescription(taskIndex) {
     if (taskIndex >= 0 && taskIndex < tasks.length) {
       const task = tasks[taskIndex];
-      console.log('Showing description for:', task.name, 'Description:', task.description); // Debug log
+      console.log('Showing description for:', task.name, 'Description:', task.description);
       document.getElementById('task-title').textContent = task.name;
       document.getElementById('task-desc').textContent = task.description;
       const descriptionDiv = document.getElementById('task-description');
@@ -65,6 +77,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('close-description').addEventListener('click', () => {
     document.getElementById('task-description').classList.add('hidden');
   });
+
+  window.updateWeeklyTotal = function () {
+    let total = 0;
+    const maxTotal = tasks.reduce((sum, task) => sum + task.points, 0); // Max possible points
+    const checkboxes = document.querySelectorAll('#grid-body input[type="checkbox"]:checked');
+    checkboxes.forEach(checkbox => {
+      const taskNum = checkbox.closest('td').cellIndex; // Get column index (1-based for tasks)
+      if (taskNum > 0 && taskNum <= tasks.length) {
+        total += tasks[taskNum - 1].points; // Subtract 1 for 0-based array
+      }
+    });
+    const targetValue = target.target || 200; // Use fetched target or default
+    document.getElementById('weekly-progress').textContent = `Weekly Total: ${total} points | Total to Target: ${total} / ${targetValue}`;
+  };
 
   async function login() {
     const username = document.getElementById('username').value;
@@ -84,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         role = data.role;
         document.getElementById('login').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        await fetchTasks();
+        await Promise.all([fetchTasks(), fetchTarget()]); // Fetch both in parallel
         generateTableHeader('grid-header');
         generateTableHeader('history-header');
         loadGrid();

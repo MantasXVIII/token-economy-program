@@ -15,13 +15,19 @@
   </div>
   <div id="app" class="hidden bg-white p-6 rounded shadow-md w-full max-w-4xl">
     <h1 class="text-2xl font-bold mb-4">Token Economy</h1>
+    <div id="current-target" class="mb-4 text-lg font-semibold flex items-center">
+      Current Target: <span id="target-value"></span>
+      <img id="target-image" src="" alt="Target Image" class="ml-2 h-12 w-auto hidden">
+    </div>
     <div id="grid-container" class="overflow-x-auto bg-white shadow-inner">
       <table class="w-full border-collapse">
         <thead id="grid-header"></thead>
         <tbody id="grid-body"></tbody>
       </table>
     </div>
-    <div id="weekly-total" class="mt-4 text-xl font-bold">Weekly Total: 0 points</div>
+    <div id="weekly-progress" class="mt-4 text-xl font-bold">
+      Weekly Total: 0 points | Total to Target: 0 / 200
+    </div>
     <button id="save-history-btn" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 mt-2">Save History</button>
     <button onclick="viewHistory()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">View History</button>
     <div id="history" class="mt-4 hidden">
@@ -30,7 +36,7 @@
       <div id="history-table-container" class="overflow-x-auto bg-white shadow-inner">
         <table class="w-full border-collapse">
           <thead id="history-header"></thead>
-          <tbody id="history-body"></tbody>
+        <tbody id="history-body"></tbody>
         </table>
       </div>
     </div>
